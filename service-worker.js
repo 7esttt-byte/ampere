@@ -1,5 +1,5 @@
 // Service Worker لتطبيق أمبير - يجعل التطبيق يعمل بدون انترنت
-const CACHE_NAME = 'ampere-v3.0';
+const CACHE_NAME = 'ampere-v5.0';
 const FILES_TO_CACHE = [
   './',
   './index.html',
