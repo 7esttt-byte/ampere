@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F766E">
+<title>⚡ أمبير - نظام إدارة المولدات الكهربائية</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@600;700;900&display=swap" rel="stylesheet">
+
+<!-- مكتبات الطباعة -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --primary: #0F766E;
+  --primary-dark: #134E4A;
+  --primary-light: #14B8A6;
+  --gold: #F59E0B;
+  --gold-light: #FCD34D;
+  --gold-dark: #D97706;
+  --danger: #DC2626;
+  --warning: #F59E0B;
+  --success: #10B981;
+  --bg: #F0FDF4;
+  --bg-soft: #ECFDF5;
+  --bg-card: #FFFFFF;
+  --text: #064E3B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --border-light: #F1F5F9;
+  --shadow-sm: 0 2px 4px rgba(15, 118, 110, 0.06);
+  --shadow: 0 4px 12px rgba(15, 118, 110, 0.08);
+  --shadow-lg: 0 8px 24px rgba(15, 118, 110, 0.12);
+  --shadow-gold: 0 4px 16px rgba(245, 158, 11, 0.25);
+  --shadow-emerald: 0 4px 16px rgba(20, 184, 166, 0.25);
+}
+
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: linear-gradient(180deg, #F0FDF4 0%, #ECFDF5 50%, #D1FAE5 100%);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 100px;
+  overflow-x: hidden;
+}
+
+/* ============ الترويسة ============ */
+.header {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  color: white;
+  padding: 20px 20px 28px;
+  border-radius: 0 0 32px 32px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: '⚡';
+  position: absolute;
+  font-size: 240px;
+  opacity: 0.04;
+  left: -40px;
+  top: -60px;
+  color: var(--gold-light);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 16px;
+}
+
+.logo-text-block h1 {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-text-block h1 .bolt {
+  color: var(--gold-light);
+  font-size: 30px;
+  filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.5));
+}
+
+.logo-text-block p {
+  font-size: 11px;
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+.header-icons { display: flex; gap: 8px; }
+
+.header-icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.header-icon-btn:active { transform: scale(0.92); }
+
+.header-icon-btn .badge {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  background: var(--danger);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ============ ملخص الحالة في الترويسة ============ */
+.header-summary {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.summary-item { text-align: center; }
+.summary-item .label { font-size: 11px; opacity: 0.85; margin-bottom: 4px; }
+.summary-item .value { font-size: 18px; font-weight: 900; font-family: 'Cairo'; }
+.summary-item .value.gold { color: var(--gold-light); }
+.summary-item .value.green { color: #6EE7B7; }
+.summary-item .value.red { color: #FCA5A5; }
+
+/* ============ التبويبات السفلية ============ */
+.tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--border);
+  padding: 12px 20px 24px;
+  display: flex;
+  justify-content: space-around;
+  z-index: 50;
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 -4px 20px rgba(15, 118, 110, 0.06);
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-family: inherit;
+  position: relative;
+}
+
+.tab.active { color: var(--primary); }
+.tab .icon { font-size: 22px; }
+.tab .label { font-size: 10px; font-weight: 700; }
+
+/* ============ الصفحات ============ */
+.page { display: none; padding: 20px; margin-top: -16px; }
+.page.active { display: block; animation: fadeIn 0.3s; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 24px 0 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.section-title .title-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title .title-text::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  background: linear-gradient(to bottom, var(--gold), var(--primary));
+  border-radius: 2px;
+}
+
+.section-title .action-link {
+  font-size: 12px;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* ============ شريط البحث والفلترة (الرئيسية) ============ */
+.search-bar {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  margin-bottom: 16px;
+}
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  background: transparent;
+  color: var(--text);
+}
+
+.search-bar .search-icon { font-size: 18px; color: var(--text-muted); }
+
+/* فلاتر الحالة */
+.status-filters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.status-filter {
+  background: var(--bg-card);
+  padding: 10px 8px;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.status-filter.active { border-color: var(--primary); background: var(--bg-soft); }
+.status-filter .label { font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; }
+.status-filter .count { font-size: 18px; font-weight: 900; font-family: 'Cairo'; color: var(--text); }
+.status-filter.all .count { color: var(--text); }
+.status-filter.paid .count { color: var(--success); }
+.status-filter.unpaid .count { color: var(--danger); }
+.status-filter.debt .count { color: var(--gold-dark); }
+
+/* فلتر البورد */
+.board-filter-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.board-pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-secondary);
+}
+
+.board-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* ============ بطاقات المشتركين ============ */
+.subscriber-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.subscriber-card::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+}
+
+.subscriber-card.paid::before { background: var(--success); }
+.subscriber-card.unpaid::before { background: var(--danger); }
+.subscriber-card.partial::before { background: linear-gradient(to bottom, var(--gold), var(--success)); }
+.subscriber-card.debt::before { background: var(--gold-dark); }
+
+.subscriber-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 800;
+  font-family: 'Cairo';
+  flex-shrink: 0;
+}
+
+.subscriber-info { flex: 1; min-width: 0; }
+.subscriber-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subscriber-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.subscriber-meta span { display: flex; align-items: center; gap: 3px; }
+
+.subscriber-amount {
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.subscriber-amount .value {
+  font-size: 15px;
+  font-weight: 900;
+  font-family: 'Cairo';
+  color: var(--text);
+}
+
+.subscriber-amount .badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.subscriber-amount .badge.paid { background: #DCFCE7; color: var(--success); }
+.subscriber-amount .badge.unpaid { background: #FEE2E2; color: var(--danger); }
+.subscriber-amount .badge.partial { background: #FEF3C7; color: var(--gold-dark); }
+
+/* ============ زر الإضافة العائم (FAB) ============ */
+.fab {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: white;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: var(--shadow-gold);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: transform 0.2s;
+}
+
+.fab:active { transform: scale(0.92); }
+
+/* ============ القائمة المنزلقة (FAB Menu) ============ */
+.fab-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 0 20px 180px;
+  z-index: 60;
+}
+
+.fab-menu-overlay.active { display: flex; animation: fadeIn 0.2s; }
+
+.fab-menu {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 12px;
+  width: 100%;
+  max-width: 240px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s;
+}
+
+.fab-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.fab-menu-item:active { background: var(--bg-soft); }
+.fab-menu-item .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  flex-shrink: 0;
+}
+.fab-menu-item.payment .icon { background: linear-gradient(135deg, var(--primary-light), var(--primary)); }
+.fab-menu-item.subscriber .icon { background: linear-gradient(135deg, #3B82F6, #1D4ED8); }
+.fab-menu-item.expense .icon { background: linear-gradient(135deg, #EF4444, var(--danger)); }
+.fab-menu-item.hours .icon { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); }
+.fab-menu-item.debt .icon { background: linear-gradient(135deg, #A855F7, #7E22CE); }
+
+.fab-menu-item .text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ============ بطاقة الربح ============ */
+.profit-card {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 24px;
+  padding: 28px 24px;
+  margin-bottom: 16px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-emerald);
+}
+
+.profit-card.loss {
+  background: linear-gradient(135deg, var(--danger), #EF4444);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.25);
+}
+
+.profit-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -10%;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: 50%;
+}
+
+.profit-card::after {
+  content: '⚡';
+  position: absolute;
+  font-size: 120px;
+  opacity: 0.08;
+  right: -10px;
+  bottom: -30px;
+}
+
+.profit-label { font-size: 13px; opacity: 0.95; margin-bottom: 8px; font-weight: 600; position: relative; }
+.profit-value { font-size: 36px; font-weight: 900; margin-bottom: 6px; font-family: 'Cairo'; position: relative; }
+.profit-currency { font-size: 13px; opacity: 0.9; position: relative; }
+
+.profit-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 16px;
+  position: relative;
+}
+
+.profit-detail {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.profit-detail .label { font-size: 11px; opacity: 0.9; margin-bottom: 2px; }
+.profit-detail .value { font-size: 14px; font-weight: 800; font-family: 'Cairo'; }
+
+/* ============ Donut Chart ============ */
+.donut-container {
+  background: var(--bg-card);
+  border-radius: 24px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+}
+
+.donut-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.donut-svg { width: 100%; max-width: 140px; margin: 0 auto; display: block; }
+.donut-bg { fill: none; stroke: var(--border-light); stroke-width: 12; }
+.donut-fg {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease-out;
+}
+
+.donut-center {
+  fill: var(--text);
+  font-family: 'Cairo';
+  font-size: 18px;
+  font-weight: 900;
+  text-anchor: middle;
+}
+
+.donut-info { display: flex; flex-direction: column; gap: 12px; }
+.donut-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+.donut-label strong { color: var(--text); }
+.donut-dot { width: 12px; height: 12px; border-radius: 4px; }
+
+/* ============ قائمة الفئات ============ */
+.category-list {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 8px 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  border: 1px solid var(--border-light);
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.category-row:last-child { border-bottom: none; }
+.category-info { display: flex; align-items: center; gap: 12px; }
+
+.category-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+}
+
+.category-info .text .name { font-size: 14px; font-weight: 700; color: var(--text); }
+.category-info .text .meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.category-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gold-dark);
+  font-family: 'Cairo';
+}
+
+.category-value.danger { color: var(--danger); }
+.category-value.success { color: var(--success); }
+
+/* ============ Bar Chart ============ */
+.bar-chart {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  border: 1px solid var(--border-light);
+}
+
+.bar-chart-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bars { display: flex; align-items: flex-end; gap: 10px; height: 140px; padding-top: 16px; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bar-value { font-size: 10px; color: var(--text-secondary); font-weight: 700; }
+.bar {
+  width: 100%;
+  background: linear-gradient(to top, var(--gold-dark), var(--gold-light));
+  border-radius: 8px 8px 0 0;
+  min-height: 4px;
+  transition: height 0.6s ease-out;
+  box-shadow: 0 -2px 8px rgba(245, 158, 11, 0.2);
+}
+.bar-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+
+/* ============ قائمة النشاطات ============ */
+.activity-list {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 8px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.activity-item:active { background: var(--bg-soft); }
+
+.activity-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.activity-content { flex: 1; min-width: 0; }
+.activity-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.activity-meta { font-size: 11px; color: var(--text-muted); }
+.activity-amount { font-size: 14px; font-weight: 800; color: var(--primary); flex-shrink: 0; font-family: 'Cairo'; }
+.activity-amount.red { color: var(--danger); }
+
+.empty-state { padding: 50px 20px; text-align: center; color: var(--text-muted); }
+.empty-state .icon { font-size: 56px; margin-bottom: 12px; opacity: 0.4; }
+.empty-state .text { font-size: 14px; margin-bottom: 16px; }
+.empty-state .btn-add {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  box-shadow: var(--shadow-emerald);
+}
+
+/* ============ المودالات ============ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 118, 110, 0.4);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+
+.modal {
+  background: var(--bg-card);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 28px 28px 0 0;
+  padding: 24px 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s;
+}
+
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.modal h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group { margin-bottom: 14px; }
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: white;
+}
+
+.form-group textarea { min-height: 70px; resize: vertical; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+.btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.1s;
+}
+
+.btn:active { transform: scale(0.96); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  box-shadow: var(--shadow-emerald);
+}
+
+.btn-secondary { background: var(--border-light); color: var(--text); }
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger), #EF4444);
+  color: white;
+}
+
+.btn-whatsapp {
+  background: #25D366;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ============ شاشة تفاصيل المشترك ============ */
+.detail-card {
+  background: var(--bg-card);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.detail-row:last-child { border-bottom: none; }
+.detail-row .label { font-size: 12px; color: var(--text-muted); }
+.detail-row .value { font-size: 14px; font-weight: 700; color: var(--text); }
+
+.detail-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* ============ Toast ============ */
+.toast {
+  position: fixed;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%) translateY(150px);
+  background: var(--text);
+  color: white;
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  box-shadow: 0 12px 36px rgba(15, 118, 110, 0.3);
+  z-index: 1000;
+  transition: transform 0.3s;
+  max-width: 90%;
+  text-align: center;
+  font-size: 14px;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--primary); }
+.toast.error { background: var(--danger); }
+
+/* ============ صفحة الإعدادات ============ */
+.settings-section {
+  background: var(--bg-card);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+}
+
+.settings-section h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; color: var(--primary); }
+.settings-field { margin-bottom: 14px; }
+.settings-field:last-child { margin-bottom: 0; }
+.settings-field label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; display: block; font-weight: 600; }
+.settings-field input, .settings-field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+}
+.settings-field input[dir="ltr"] { direction: ltr; text-align: left; }
+
+/* ============ التسعيرات ============ */
+.pricing-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pricing-info { display: flex; align-items: center; gap: 12px; }
+.pricing-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.pricing-icon.residential { background: #DBEAFE; }
+.pricing-icon.commercial { background: #FEF3C7; }
+.pricing-icon.industrial { background: #FCE7F3; }
+.pricing-icon.special { background: #E9D5FF; }
+
+.pricing-info .text .name { font-size: 15px; font-weight: 800; color: var(--text); }
+.pricing-info .text .meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.pricing-value {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--primary);
+  font-family: 'Cairo';
+}
+
+/* ============ دوائر الإحصائيات ============ */
+.kpi-circles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi-circle {
+  background: var(--bg-card);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+  text-align: center;
+}
+
+.kpi-circle .ring {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 12px;
+  position: relative;
+}
+
+.kpi-circle .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.kpi-circle .ring-bg { fill: none; stroke: var(--border-light); stroke-width: 8; }
+.kpi-circle .ring-fg { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dasharray 0.6s; }
+.kpi-circle .ring-fg.green { stroke: var(--success); }
+.kpi-circle .ring-fg.red { stroke: var(--danger); }
+.kpi-circle .ring-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 900;
+  font-family: 'Cairo';
+}
+
+.kpi-circle.paid .ring-center { color: var(--success); }
+.kpi-circle.unpaid .ring-center { color: var(--danger); }
+.kpi-circle .label { font-size: 13px; color: var(--text-secondary); font-weight: 700; }
+
+/* ============ الوصولات (Receipts) ============ */
+.receipt-container {
+  background: white;
+  margin: 0 auto;
+  padding: 0;
+  font-family: 'Tajawal', sans-serif;
+  color: #000;
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+}
+
+/* وصل حراري 80mm */
+.receipt-thermal {
+  width: 80mm;
+  padding: 6mm 4mm;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.receipt-thermal .header-section {
+  text-align: center;
+  border-bottom: 2px dashed #000;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.receipt-thermal .logo {
+  font-size: 28px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  letter-spacing: -1px;
+}
+
+.receipt-thermal .logo .bolt { color: #F59E0B; }
+.receipt-thermal .gen-name { font-size: 13px; font-weight: 700; }
+.receipt-thermal .gen-info { font-size: 10px; color: #555; margin-top: 2px; }
+
+.receipt-thermal .title-bar {
+  background: #000;
+  color: white;
+  padding: 4px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 12px;
+  margin: 6px 0;
+}
+
+.receipt-thermal .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 11px;
+}
+
+.receipt-thermal .row .label { color: #555; }
+.receipt-thermal .row .value { font-weight: 700; }
+.receipt-thermal .divider { border-top: 1px dashed #999; margin: 6px 0; }
+
+.receipt-thermal .total-box {
+  background: #f0f0f0;
+  border: 2px solid #000;
+  padding: 8px;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.receipt-thermal .total-box .label { font-size: 10px; }
+.receipt-thermal .total-box .value {
+  font-size: 18px;
+  font-weight: 900;
+  font-family: 'Cairo';
+  margin-top: 2px;
+}
+
+.receipt-thermal .qr-section {
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px dashed #000;
+}
+
+.receipt-thermal .qr-section #qrcode-thermal {
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.receipt-thermal .footer-msg {
+  text-align: center;
+  font-size: 10px;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+/* وصل A4 */
+.receipt-a4 {
+  width: 210mm;
+  min-height: 100mm;
+  padding: 15mm;
+  font-size: 13px;
+}
+
+.receipt-a4 .header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 4px solid #0F766E;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+
+.receipt-a4 .brand {
+  font-size: 32px;
+  font-weight: 900;
+  color: #0F766E;
+  letter-spacing: -1px;
+}
+
+.receipt-a4 .brand .bolt { color: #F59E0B; }
+.receipt-a4 .brand-tagline { font-size: 12px; color: #666; margin-top: 2px; }
+
+.receipt-a4 .receipt-meta { text-align: left; font-size: 11px; color: #555; }
+.receipt-a4 .receipt-meta strong { color: #000; font-size: 13px; }
+
+.receipt-a4 .title-bar {
+  background: linear-gradient(135deg, #0F766E, #14B8A6);
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 16px;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+
+.receipt-a4 .info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.receipt-a4 .info-cell {
+  background: #F0FDF4;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-right: 3px solid #0F766E;
+}
+
+.receipt-a4 .info-cell .label { font-size: 10px; color: #666; }
+.receipt-a4 .info-cell .value { font-size: 14px; font-weight: 800; color: #0F766E; margin-top: 2px; }
+
+.receipt-a4 .total-box {
+  background: linear-gradient(135deg, #0F766E, #14B8A6);
+  color: white;
+  padding: 16px;
+  text-align: center;
+  border-radius: 12px;
+  margin: 14px 0;
+}
+
+.receipt-a4 .total-box .label { font-size: 13px; opacity: 0.9; }
+.receipt-a4 .total-box .value {
+  font-size: 32px;
+  font-weight: 900;
+  font-family: 'Cairo';
+  margin-top: 4px;
+}
+
+.receipt-a4 .footer-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 2px dashed #ddd;
+}
+
+.receipt-a4 .footer-section .signature {
+  border-top: 2px solid #333;
+  padding-top: 4px;
+  width: 130px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.receipt-a4 .footer-section .qr-section { text-align: center; }
+
+.receipt-a4 .footer-section .stamp {
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+}
+
+.receipt-a4 .footer-msg {
+  text-align: center;
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-top: 12px;
+  font-weight: 700;
+}
+
+/* ============ مودال خيارات الطباعة ============ */
+.print-options {
+  display: grid;
+  gap: 10px;
+}
+
+.print-option {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  width: 100%;
+  text-align: right;
+}
+
+.print-option:active { transform: scale(0.98); border-color: var(--primary); background: var(--bg-soft); }
+
+.print-option .icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.print-option.thermal .icon-box { background: linear-gradient(135deg, #6366F1, #4F46E5); }
+.print-option.a4 .icon-box { background: linear-gradient(135deg, var(--primary), var(--primary-light)); }
+.print-option.whatsapp .icon-box { background: #25D366; }
+.print-option.share .icon-box { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); }
+
+.print-option .info { flex: 1; }
+.print-option .info .name { font-size: 14px; font-weight: 800; color: var(--text); }
+.print-option .info .desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.print-option .arrow { color: var(--text-muted); font-size: 18px; }
+
+/* زر الطباعة في تفاصيل المشترك */
+.btn-print {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: var(--shadow-gold);
+}
+
+/* قسم خيارات إضافية في المودال */
+.modal-extras {
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .receipt-container, .receipt-container * { visibility: visible; }
+  .receipt-container { position: absolute; left: 0; top: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ الترويسة ============ -->
+<div class="header">
+  <div class="header-top">
+    <div class="logo-text-block">
+      <h1><span class="bolt">⚡</span> أمبير</h1>
+      <p>نظام إدارة المولدات الكهربائية</p>
+    </div>
+    <div class="header-icons">
+      <button class="header-icon-btn" onclick="openSearch()">🔍</button>
+      <button class="header-icon-btn" onclick="switchTab('settings', null)">⚙️</button>
+    </div>
+  </div>
+  
+  <!-- ملخص الحالة -->
+  <div class="header-summary">
+    <div class="summary-item">
+      <div class="label">المشتركون</div>
+      <div class="value gold" id="hdr-subs">0</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">واصل</div>
+      <div class="value green" id="hdr-paid">0</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">غير واصل</div>
+      <div class="value red" id="hdr-unpaid">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ الصفحة الرئيسية ============ -->
+<div class="page active" id="page-home">
+  
+  <!-- شريط البحث -->
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="ابحث عن مشترك..." oninput="filterSubscribers()">
+  </div>
+  
+  <!-- فلاتر الحالة -->
+  <div class="status-filters">
+    <button class="status-filter all active" data-filter="all" onclick="setStatusFilter('all', this)">
+      <div class="label">الكل</div>
+      <div class="count" id="filter-all">0</div>
+    </button>
+    <button class="status-filter paid" data-filter="paid" onclick="setStatusFilter('paid', this)">
+      <div class="label">واصل</div>
+      <div class="count" id="filter-paid">0</div>
+    </button>
+    <button class="status-filter unpaid" data-filter="unpaid" onclick="setStatusFilter('unpaid', this)">
+      <div class="label">غير واصل</div>
+      <div class="count" id="filter-unpaid">0</div>
+    </button>
+    <button class="status-filter debt" data-filter="debt" onclick="setStatusFilter('debt', this)">
+      <div class="label">مديونين</div>
+      <div class="count" id="filter-debt">0</div>
+    </button>
+  </div>
+  
+  <!-- فلتر البورد -->
+  <div class="board-filter-row" id="board-filters">
+    <button class="board-pill active" onclick="setBoardFilter('all', this)">جميع البوردات</button>
+  </div>
+  
+  <!-- قائمة المشتركين -->
+  <div id="subscribers-list">
+    <div class="empty-state">
+      <div class="icon">👥</div>
+      <div class="text">لا يوجد مشتركون بعد</div>
+      <button class="btn-add" onclick="openModal('add_subscriber')">+ إضافة مشترك جديد</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ صفحة الإحصائيات ============ -->
+<div class="page" id="page-stats">
+  
+  <!-- بطاقة الربح -->
+  <div class="profit-card" id="profit-card">
+    <div class="profit-label" id="profit-label">📈 صافي الربح المتوقع</div>
+    <div class="profit-value" id="profit-value">0</div>
+    <div class="profit-currency">دينار عراقي</div>
+    <div class="profit-detail-grid">
+      <div class="profit-detail">
+        <div class="label">الإيرادات</div>
+        <div class="value" id="profit-revenue">0</div>
+      </div>
+      <div class="profit-detail">
+        <div class="label">المصاريف</div>
+        <div class="value" id="profit-expenses">0</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- دائرتي المسدد وغير المسدد -->
+  <div class="kpi-circles">
+    <div class="kpi-circle paid">
+      <div class="ring">
+        <svg viewBox="0 0 100 100">
+          <circle class="ring-bg" cx="50" cy="50" r="40"/>
+          <circle class="ring-fg green" id="ring-paid" cx="50" cy="50" r="40" stroke-dasharray="0 251.2"/>
+        </svg>
+        <div class="ring-center" id="ring-paid-num">0</div>
+      </div>
+      <div class="label">المسددون</div>
+    </div>
+    <div class="kpi-circle unpaid">
+      <div class="ring">
+        <svg viewBox="0 0 100 100">
+          <circle class="ring-bg" cx="50" cy="50" r="40"/>
+          <circle class="ring-fg red" id="ring-unpaid" cx="50" cy="50" r="40" stroke-dasharray="0 251.2"/>
+        </svg>
+        <div class="ring-center" id="ring-unpaid-num">0</div>
+      </div>
+      <div class="label">غير المسددين</div>
+    </div>
+  </div>
+  
+  <!-- نسبة التحصيل -->
+  <div class="donut-container">
+    <div class="section-title" style="margin-top: 0;">
+      <div class="title-text">🎯 نسبة التحصيل</div>
+    </div>
+    <div class="donut-grid">
+      <svg class="donut-svg" viewBox="0 0 100 100">
+        <circle class="donut-bg" cx="50" cy="50" r="40"/>
+        <circle class="donut-fg" id="donut-collection" cx="50" cy="50" r="40" 
+                stroke-dasharray="0 251.2" transform="rotate(-90 50 50)"/>
+        <text class="donut-center" x="50" y="56" id="donut-percent">0%</text>
+      </svg>
+      <div class="donut-info">
+        <div class="donut-label">
+          <div class="donut-dot" style="background: var(--primary);"></div>
+          <span>المسدد: <strong id="info-paid">0</strong></span>
+        </div>
+        <div class="donut-label">
+          <div class="donut-dot" style="background: var(--border);"></div>
+          <span>المتبقي: <strong id="info-remaining">0</strong></span>
+        </div>
+        <div class="donut-label">
+          <div class="donut-dot" style="background: var(--gold);"></div>
+          <span>الإجمالي: <strong id="info-total">0</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- المشتركون حسب النوع -->
+  <div class="section-title">
+    <div class="title-text">👥 المشتركون حسب النوع</div>
+  </div>
+  <div class="category-list">
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">🏠</div>
+        <div class="text"><div class="name">سكني</div><div class="meta">المشتركون النشطون</div></div>
+      </div>
+      <div class="category-value" id="cat-residential">0</div>
+    </div>
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">🏢</div>
+        <div class="text"><div class="name">تجاري</div><div class="meta">المشتركون النشطون</div></div>
+      </div>
+      <div class="category-value" id="cat-commercial">0</div>
+    </div>
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">🏭</div>
+        <div class="text"><div class="name">صناعي</div><div class="meta">المشتركون النشطون</div></div>
+      </div>
+      <div class="category-value" id="cat-industrial">0</div>
+    </div>
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">⭐</div>
+        <div class="text"><div class="name">خاص</div><div class="meta">المشتركون النشطون</div></div>
+      </div>
+      <div class="category-value" id="cat-special">0</div>
+    </div>
+  </div>
+  
+  <!-- المصاريف خلال 7 أيام -->
+  <div class="bar-chart">
+    <div class="bar-chart-title">📊 المصاريف خلال آخر 7 أيام</div>
+    <div class="bars" id="expenses-bars"></div>
+  </div>
+  
+  <!-- المصاريف حسب النوع -->
+  <div class="section-title">
+    <div class="title-text">💸 المصاريف حسب النوع</div>
+  </div>
+  <div class="category-list">
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">⛽</div>
+        <div class="text"><div class="name">وقود (كاز)</div><div class="meta">إجمالي المصاريف</div></div>
+      </div>
+      <div class="category-value danger" id="exp-fuel">0</div>
+    </div>
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">🔧</div>
+        <div class="text"><div class="name">صيانة</div><div class="meta">إجمالي المصاريف</div></div>
+      </div>
+      <div class="category-value danger" id="exp-maintenance">0</div>
+    </div>
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">💼</div>
+        <div class="text"><div class="name">رواتب</div><div class="meta">إجمالي المصاريف</div></div>
+      </div>
+      <div class="category-value danger" id="exp-salaries">0</div>
+    </div>
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">📦</div>
+        <div class="text"><div class="name">أخرى</div><div class="meta">إجمالي المصاريف</div></div>
+      </div>
+      <div class="category-value danger" id="exp-other">0</div>
+    </div>
+  </div>
+  
+  <!-- ساعات التشغيل -->
+  <div class="section-title">
+    <div class="title-text">⏱️ ساعات التشغيل</div>
+  </div>
+  <div class="category-list">
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">📅</div>
+        <div class="text"><div class="name">إجمالي الساعات</div><div class="meta">منذ بداية الاستخدام</div></div>
+      </div>
+      <div class="category-value" id="hours-total">0</div>
+    </div>
+    <div class="category-row">
+      <div class="category-info">
+        <div class="category-icon">📊</div>
+        <div class="text"><div class="name">المتوسط اليومي</div><div class="meta">ساعات/يوم</div></div>
+      </div>
+      <div class="category-value" id="hours-avg">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ صفحة التسعيرات ============ -->
+<div class="page" id="page-pricing">
+  <div class="section-title">
+    <div class="title-text">💰 تسعيرة الأمبير لكل فئة</div>
+  </div>
+  
+  <div class="pricing-card" onclick="editPricing('residential', 'سكني')">
+    <div class="pricing-info">
+      <div class="pricing-icon residential">🏠</div>
+      <div class="text">
+        <div class="name">سكني</div>
+        <div class="meta">للمنازل العادية</div>
+      </div>
+    </div>
+    <div class="pricing-value"><span id="price-residential">12,000</span> د.ع</div>
+  </div>
+  
+  <div class="pricing-card" onclick="editPricing('commercial', 'تجاري')">
+    <div class="pricing-info">
+      <div class="pricing-icon commercial">🏢</div>
+      <div class="text">
+        <div class="name">تجاري</div>
+        <div class="meta">للمحلات والمكاتب</div>
+      </div>
+    </div>
+    <div class="pricing-value"><span id="price-commercial">15,000</span> د.ع</div>
+  </div>
+  
+  <div class="pricing-card" onclick="editPricing('industrial', 'صناعي')">
+    <div class="pricing-info">
+      <div class="pricing-icon industrial">🏭</div>
+      <div class="text">
+        <div class="name">صناعي</div>
+        <div class="meta">للمصانع والورش</div>
+      </div>
+    </div>
+    <div class="pricing-value"><span id="price-industrial">18,000</span> د.ع</div>
+  </div>
+  
+  <div class="pricing-card" onclick="editPricing('special', 'خاص')">
+    <div class="pricing-info">
+      <div class="pricing-icon special">⭐</div>
+      <div class="text">
+        <div class="name">خاص</div>
+        <div class="meta">سعر مخصص</div>
+      </div>
+    </div>
+    <div class="pricing-value"><span id="price-special">10,000</span> د.ع</div>
+  </div>
+  
+  <div style="background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 14px; padding: 14px; margin-top: 16px; font-size: 13px; color: var(--gold-dark);">
+    ⚠️ <strong>تنبيه:</strong> تغيير التسعيرة يؤثر على فواتير جميع المشتركين الجدد. يُحذر من هذا الإجراء.
+  </div>
+</div>
+
+<!-- ============ صفحة السجل ============ -->
+<div class="page" id="page-history">
+  <div class="section-title">
+    <div class="title-text">📋 سجل العمليات الكامل</div>
+  </div>
+  <div class="activity-list" id="full-history">
+    <div class="empty-state">
+      <div class="icon">📋</div>
+      <div class="text">لا توجد عمليات مسجلة</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ صفحة الإعدادات ============ -->
+<div class="page" id="page-settings">
+  <div class="settings-section">
+    <h3>⚙️ إعدادات الاتصال بـ n8n</h3>
+    <div class="settings-field">
+      <label>رابط Webhook</label>
+      <input type="text" id="webhookUrl" dir="ltr" placeholder="https://wissamaljaberi.app.n8n.cloud/webhook/ampere-webhook">
+    </div>
+    <div class="settings-field">
+      <label>اسم المشغّل</label>
+      <input type="text" id="operatorName" placeholder="محمد سهر الجبوري">
+    </div>
+    <div class="settings-field">
+      <label>اسم المولدة</label>
+      <input type="text" id="generatorName" placeholder="مولدة الحي السكني">
+    </div>
+  </div>
+  
+  <div class="settings-section">
+    <h3>📞 معلومات التواصل</h3>
+    <div class="settings-field">
+      <label>رقم الهاتف</label>
+      <input type="tel" id="ownerPhone" dir="ltr" placeholder="9647701234567">
+    </div>
+    <div class="settings-field">
+      <label>العنوان</label>
+      <input type="text" id="ownerAddress" placeholder="كربلاء - الحي السكني">
+    </div>
+  </div>
+  
+  <div class="settings-section">
+    <h3>🗑️ إدارة البيانات</h3>
+    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="exportData()">
+      📤 تصدير البيانات
+    </button>
+    <button class="btn btn-danger" style="width: 100%;" onclick="clearLocalData()">
+      مسح البيانات المحلية
+    </button>
+  </div>
+  
+  <button class="btn btn-primary" style="width: 100%;" onclick="saveSettings()">
+    💾 حفظ الإعدادات
+  </button>
+  
+  <div style="text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 11px;">
+    <div style="font-weight: 700; color: var(--primary);">⚡ أمبير v4.0 Pro</div>
+    <div style="margin-top: 4px;">د. وسام الجابري - 2026</div>
+  </div>
+</div>
+
+<!-- ============ FAB Menu ============ -->
+<button class="fab" onclick="toggleFabMenu()" id="fab-button">+</button>
+
+<div class="fab-menu-overlay" id="fab-menu" onclick="if(event.target===this) toggleFabMenu()">
+  <div class="fab-menu">
+    <div class="fab-menu-item payment" onclick="openModal('payment')">
+      <div class="icon">💰</div>
+      <div class="text">تسجيل تسديد</div>
+    </div>
+    <div class="fab-menu-item subscriber" onclick="openModal('add_subscriber')">
+      <div class="icon">👤</div>
+      <div class="text">إضافة مشترك</div>
+    </div>
+    <div class="fab-menu-item debt" onclick="openModal('debt_payment')">
+      <div class="icon">💳</div>
+      <div class="text">تسديد دين</div>
+    </div>
+    <div class="fab-menu-item expense" onclick="openModal('expense')">
+      <div class="icon">💸</div>
+      <div class="text">تسجيل مصروف</div>
+    </div>
+    <div class="fab-menu-item hours" onclick="openModal('operating_hours')">
+      <div class="icon">⏱️</div>
+      <div class="text">ساعات تشغيل</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ المودالات ============ -->
+<div class="modal-overlay" id="modal-payment">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>💰 تسجيل تسديد</h2>
+    <div class="form-group">
+      <label>المشترك</label>
+      <select id="pay-subscriber">
+        <option value="">-- اختر مشترك --</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>المبلغ المستحق</label>
+        <input type="number" id="pay-amount" placeholder="60000">
+      </div>
+      <div class="form-group">
+        <label>المبلغ المسدد</label>
+        <input type="number" id="pay-paid" placeholder="60000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>ملاحظات</label>
+      <textarea id="pay-notes" placeholder="تسديد كامل..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitForm('payment')">إرسال</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add_subscriber">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>👤 إضافة مشترك جديد</h2>
+    <div class="form-group">
+      <label>الاسم الكامل</label>
+      <input type="text" id="sub-name" placeholder="أحمد علي حسن">
+    </div>
+    <div class="form-group">
+      <label>رقم الموبايل</label>
+      <input type="tel" id="sub-phone" placeholder="9647701234567" dir="ltr">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>عدد الأمبيرات</label>
+        <input type="number" id="sub-amperes" placeholder="5">
+      </div>
+      <div class="form-group">
+        <label>رقم البورد</label>
+        <input type="text" id="sub-board" placeholder="1" value="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>نوع الاشتراك</label>
+      <select id="sub-type" onchange="autoCalcPrice()">
+        <option value="سكني">🏠 سكني</option>
+        <option value="تجاري">🏢 تجاري</option>
+        <option value="صناعي">🏭 صناعي</option>
+        <option value="خاص">⭐ خاص</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>المبلغ الشهري (يُحسب تلقائياً)</label>
+      <input type="number" id="sub-amount" placeholder="60000">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitForm('add_subscriber')">إضافة</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>💸 تسجيل مصروف</h2>
+    <div class="form-group">
+      <label>نوع المصروف</label>
+      <select id="exp-type">
+        <option value="وقود (كاز)">⛽ وقود (كاز)</option>
+        <option value="صيانة">🔧 صيانة</option>
+        <option value="رواتب">💼 رواتب</option>
+        <option value="قطع غيار">⚙️ قطع غيار</option>
+        <option value="كهرباء">⚡ كهرباء</option>
+        <option value="أخرى">📦 أخرى</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>المبلغ</label>
+      <input type="number" id="exp-amount" placeholder="200000">
+    </div>
+    <div class="form-group">
+      <label>ملاحظات</label>
+      <textarea id="exp-notes" placeholder="تعبئة 100 لتر..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitForm('expense')">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-operating_hours">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>⏱️ ساعات التشغيل</h2>
+    <div class="form-group">
+      <label>عدد الساعات</label>
+      <input type="number" id="op-hours" placeholder="6" step="0.5">
+    </div>
+    <div class="form-group">
+      <label>ملاحظات</label>
+      <textarea id="op-notes" placeholder="من 6 مساءً إلى 12 منتصف الليل..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitForm('operating_hours')">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-debt_payment">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>💳 تسديد دين</h2>
+    <div class="form-group">
+      <label>المشترك</label>
+      <select id="debt-subscriber">
+        <option value="">-- اختر مشترك --</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>مبلغ التسديد</label>
+      <input type="number" id="debt-amount" placeholder="50000">
+    </div>
+    <div class="form-group">
+      <label>ملاحظات</label>
+      <textarea id="debt-notes" placeholder="تسديد دين سابق..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="submitForm('debt_payment')">تسديد</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال تفاصيل المشترك -->
+<div class="modal-overlay" id="modal-subscriber_detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="detail-name">📋 تفاصيل المشترك</h2>
+    <div class="detail-card">
+      <div class="detail-row">
+        <span class="label">رقم الموبايل</span>
+        <span class="value" id="detail-phone">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">الأمبيرات</span>
+        <span class="value" id="detail-amperes">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">نوع الاشتراك</span>
+        <span class="value" id="detail-type">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">رقم البورد</span>
+        <span class="value" id="detail-board">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">المبلغ الشهري</span>
+        <span class="value" id="detail-amount">-</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">الحالة</span>
+        <span class="value" id="detail-status">-</span>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-primary" onclick="payForSelected()">💰 تسجيل تسديد</button>
+      <button class="btn btn-print" onclick="openPrintOptions()">🖨️ طباعة وصل</button>
+    </div>
+    <div class="detail-actions" style="margin-top: 10px;">
+      <button class="btn btn-whatsapp" id="btn-whatsapp" onclick="sendWhatsApp()">💬 واتساب</button>
+      <button class="btn btn-secondary" onclick="closeModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال تعديل التسعيرة -->
+<div class="modal-overlay" id="modal-pricing">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>💰 تعديل التسعيرة</h2>
+    <div class="form-group">
+      <label id="pricing-label">السعر للأمبير الواحد</label>
+      <input type="number" id="pricing-input" placeholder="12000">
+    </div>
+    <div style="background: #FEF3C7; border-radius: 12px; padding: 12px; font-size: 13px; color: var(--gold-dark); margin-bottom: 8px;">
+      ⚠️ هذا التغيير يؤثر على فواتير المشتركين الجدد فقط
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="savePricing()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال خيارات الطباعة -->
+<div class="modal-overlay" id="modal-print_options">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>🖨️ طباعة الوصل</h2>
+    <div class="print-options">
+      <button class="print-option a4" onclick="generateReceipt('a4', 'pdf')">
+        <div class="icon-box">📄</div>
+        <div class="info">
+          <div class="name">وصل احترافي A4 (PDF)</div>
+          <div class="desc">للطباعة على ورق عادي + شعار + QR Code</div>
+        </div>
+        <div class="arrow">←</div>
+      </button>
+      
+      <button class="print-option thermal" onclick="generateReceipt('thermal', 'pdf')">
+        <div class="icon-box">🧾</div>
+        <div class="info">
+          <div class="name">وصل حراري 80mm (PDF)</div>
+          <div class="desc">لطابعات الكاشير الحرارية + بلوتوث</div>
+        </div>
+        <div class="arrow">←</div>
+      </button>
+      
+      <button class="print-option whatsapp" onclick="generateReceipt('a4', 'whatsapp')">
+        <div class="icon-box">💬</div>
+        <div class="info">
+          <div class="name">إرسال عبر واتساب</div>
+          <div class="desc">PDF احترافي + رسالة جاهزة للمشترك</div>
+        </div>
+        <div class="arrow">←</div>
+      </button>
+      
+      <button class="print-option share" onclick="generateReceipt('a4', 'share')">
+        <div class="icon-box">📤</div>
+        <div class="info">
+          <div class="name">مشاركة الوصل</div>
+          <div class="desc">حفظ أو إرسال عبر أي تطبيق آخر</div>
+        </div>
+        <div class="arrow">←</div>
+      </button>
+    </div>
+    
+    <div class="modal-extras">
+      💡 <strong>نصيحة:</strong> للطابعات الحرارية البلوتوث، اختر "وصل حراري" ثم اطبع PDF عبر طابعتك المربوطة بالبلوتوث من إعدادات الجهاز.
+    </div>
+    
+    <button class="btn btn-secondary" style="width: 100%; margin-top: 14px;" onclick="closeModal()">إلغاء</button>
+  </div>
+</div>
+
+<!-- قالب الوصل الحراري (مخفي - يستخدم للتصدير) -->
+<div class="receipt-container" id="receipt-thermal">
+  <div class="receipt-thermal">
+    <div class="header-section">
+      <div class="logo"><span class="bolt">⚡</span> أمبير</div>
+      <div class="gen-name" id="rt-gen-name">مولدة أمبير</div>
+      <div class="gen-info" id="rt-gen-info">كربلاء</div>
+    </div>
+    
+    <div class="title-bar">وصل تسديد اشتراك</div>
+    
+    <div class="row"><span class="label">رقم الوصل:</span><span class="value" id="rt-receipt-no">-</span></div>
+    <div class="row"><span class="label">التاريخ:</span><span class="value" id="rt-date">-</span></div>
+    <div class="row"><span class="label">الوقت:</span><span class="value" id="rt-time">-</span></div>
+    
+    <div class="divider"></div>
+    
+    <div class="row"><span class="label">اسم المشترك:</span><span class="value" id="rt-name">-</span></div>
+    <div class="row"><span class="label">رقم الموبايل:</span><span class="value" id="rt-phone">-</span></div>
+    <div class="row"><span class="label">الأمبيرات:</span><span class="value" id="rt-amperes">-</span></div>
+    <div class="row"><span class="label">نوع الاشتراك:</span><span class="value" id="rt-type">-</span></div>
+    <div class="row"><span class="label">رقم البورد:</span><span class="value" id="rt-board">-</span></div>
+    
+    <div class="divider"></div>
+    
+    <div class="row"><span class="label">المبلغ المستحق:</span><span class="value" id="rt-due">-</span></div>
+    <div class="row"><span class="label">المبلغ المسدد:</span><span class="value" id="rt-paid">-</span></div>
+    <div class="row"><span class="label">المتبقي:</span><span class="value" id="rt-remaining">-</span></div>
+    
+    <div class="total-box">
+      <div class="label">الإجمالي المسدد</div>
+      <div class="value"><span id="rt-total">0</span> د.ع</div>
+    </div>
+    
+    <div class="row"><span class="label">المحاسب:</span><span class="value" id="rt-operator">-</span></div>
+    
+    <div class="qr-section">
+      <div id="qrcode-thermal"></div>
+      <div style="font-size: 9px; color: #666; margin-top: 4px;">امسح QR للتحقق</div>
+    </div>
+    
+    <div class="footer-msg">
+      ⚡ شكراً لتعاملكم معنا<br>
+      📞 <span id="rt-contact">-</span>
+    </div>
+  </div>
+</div>
+
+<!-- قالب الوصل A4 (مخفي - يستخدم للتصدير) -->
+<div class="receipt-container" id="receipt-a4">
+  <div class="receipt-a4">
+    <div class="header-section">
+      <div>
+        <div class="brand"><span class="bolt">⚡</span> أمبير</div>
+        <div class="brand-tagline">نظام إدارة المولدات الكهربائية</div>
+      </div>
+      <div class="receipt-meta">
+        <div><strong id="ra-gen-name">مولدة أمبير</strong></div>
+        <div id="ra-gen-info">كربلاء</div>
+        <div id="ra-contact" style="margin-top: 4px;">-</div>
+      </div>
+    </div>
+    
+    <div class="title-bar">🧾 وصل تسديد اشتراك شهري</div>
+    
+    <div style="display: flex; justify-content: space-between; margin: 12px 0;">
+      <div>
+        <strong>رقم الوصل:</strong> <span id="ra-receipt-no">-</span>
+      </div>
+      <div>
+        <strong>التاريخ:</strong> <span id="ra-date">-</span> | <strong>الوقت:</strong> <span id="ra-time">-</span>
+      </div>
+    </div>
+    
+    <div class="info-grid">
+      <div class="info-cell">
+        <div class="label">اسم المشترك</div>
+        <div class="value" id="ra-name">-</div>
+      </div>
+      <div class="info-cell">
+        <div class="label">رقم الموبايل</div>
+        <div class="value" id="ra-phone">-</div>
+      </div>
+      <div class="info-cell">
+        <div class="label">عدد الأمبيرات</div>
+        <div class="value" id="ra-amperes">-</div>
+      </div>
+      <div class="info-cell">
+        <div class="label">نوع الاشتراك</div>
+        <div class="value" id="ra-type">-</div>
+      </div>
+      <div class="info-cell">
+        <div class="label">رقم البورد</div>
+        <div class="value" id="ra-board">-</div>
+      </div>
+      <div class="info-cell">
+        <div class="label">المحاسب</div>
+        <div class="value" id="ra-operator">-</div>
+      </div>
+    </div>
+    
+    <div class="info-grid">
+      <div class="info-cell" style="border-right-color: #94A3B8;">
+        <div class="label">المبلغ المستحق</div>
+        <div class="value" style="color: #555;"><span id="ra-due">0</span> د.ع</div>
+      </div>
+      <div class="info-cell" style="border-right-color: var(--danger);">
+        <div class="label">المتبقي</div>
+        <div class="value" style="color: #DC2626;"><span id="ra-remaining">0</span> د.ع</div>
+      </div>
+    </div>
+    
+    <div class="total-box">
+      <div class="label">المبلغ المسدد</div>
+      <div class="value"><span id="ra-total">0</span> دينار عراقي</div>
+    </div>
+    
+    <div class="footer-section">
+      <div class="signature">توقيع المحاسب</div>
+      <div class="qr-section">
+        <div id="qrcode-a4"></div>
+        <div style="font-size: 9px; color: #999; margin-top: 4px;">QR للتحقق</div>
+      </div>
+      <div class="stamp">
+        ختم<br>المولدة
+      </div>
+    </div>
+    
+    <div class="footer-msg">
+      ⚡ شكراً لتعاملكم معنا - نسعى دائماً لخدمتكم بأفضل صورة
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- التبويبات السفلية -->
+<div class="tabs">
+  <button class="tab active" id="tab-home" onclick="switchTab('home', this)">
+    <div class="icon">🏠</div>
+    <div class="label">الرئيسية</div>
+  </button>
+  <button class="tab" id="tab-stats" onclick="switchTab('stats', this)">
+    <div class="icon">📊</div>
+    <div class="label">إحصائيات</div>
+  </button>
+  <button class="tab" id="tab-pricing" onclick="switchTab('pricing', this)">
+    <div class="icon">💰</div>
+    <div class="label">التسعيرة</div>
+  </button>
+  <button class="tab" id="tab-history" onclick="switchTab('history', this)">
+    <div class="icon">📋</div>
+    <div class="label">السجل</div>
+  </button>
+  <button class="tab" id="tab-settings" onclick="switchTab('settings', this)">
+    <div class="icon">⚙️</div>
+    <div class="label">إعدادات</div>
+  </button>
+</div>
+
+<script>
+// ============ الحالة العامة ============
+let currentStatusFilter = 'all';
+let currentBoardFilter = 'all';
+let selectedSubscriberId = null;
+let selectedPricingType = null;
+
+// ============ التخزين المحلي ============
+function getActivities() { return JSON.parse(localStorage.getItem('activities') || '[]'); }
+function getSubscribers() { return JSON.parse(localStorage.getItem('subscribers') || '[]'); }
+function getPricing() { 
+  return JSON.parse(localStorage.getItem('pricing') || JSON.stringify({
+    'سكني': 12000, 'تجاري': 15000, 'صناعي': 18000, 'خاص': 10000
+  })); 
+}
+
+function saveActivity(activity) {
+  const activities = getActivities();
+  activity.timestamp = new Date().toISOString();
+  activity.id = 'ACT-' + Date.now();
+  activities.unshift(activity);
+  if (activities.length > 500) activities.pop();
+  localStorage.setItem('activities', JSON.stringify(activities));
+}
+
+function saveSubscriber(sub) {
+  const subs = getSubscribers();
+  sub.id = sub.id || 'SUB-' + Date.now();
+  sub.created_at = sub.created_at || new Date().toISOString();
+  sub.paid_amount = sub.paid_amount || 0;
+  sub.debt = sub.debt || 0;
+  subs.push(sub);
+  localStorage.setItem('subscribers', JSON.stringify(subs));
+  return sub;
+}
+
+function updateSubscriber(id, updates) {
+  const subs = getSubscribers();
+  const idx = subs.findIndex(s => s.id === id);
+  if (idx >= 0) {
+    subs[idx] = Object.assign(subs[idx], updates);
+    localStorage.setItem('subscribers', JSON.stringify(subs));
+  }
+}
+
+// ============ التبويبات ============
+function switchTab(tabName, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tabName).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else document.getElementById('tab-' + tabName).classList.add('active');
+  if (tabName === 'home') updateHomePage();
+  if (tabName === 'stats') updateStatsPage();
+  if (tabName === 'history') updateHistoryPage();
+  if (tabName === 'pricing') updatePricingPage();
+  window.scrollTo(0, 0);
+}
+
+// ============ الفلاتر ============
+function setStatusFilter(filter, btn) {
+  currentStatusFilter = filter;
+  document.querySelectorAll('.status-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSubscribers();
+}
+
+function setBoardFilter(filter, btn) {
+  currentBoardFilter = filter;
+  document.querySelectorAll('.board-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSubscribers();
+}
+
+function filterSubscribers() {
+  renderSubscribers();
+}
+
+// ============ تحديث الترويسة والفلاتر ============
+function updateHeaderSummary() {
+  const subs = getSubscribers();
+  const paid = subs.filter(s => isPaid(s)).length;
+  const unpaid = subs.length - paid;
+  
+  document.getElementById('hdr-subs').textContent = subs.length;
+  document.getElementById('hdr-paid').textContent = paid;
+  document.getElementById('hdr-unpaid').textContent = unpaid;
+  
+  document.getElementById('filter-all').textContent = subs.length;
+  document.getElementById('filter-paid').textContent = paid;
+  document.getElementById('filter-unpaid').textContent = unpaid;
+  document.getElementById('filter-debt').textContent = subs.filter(s => s.debt > 0).length;
+}
+
+function isPaid(sub) {
+  return (parseFloat(sub.paid_amount) || 0) >= (parseFloat(sub.amount) || 0);
+}
+
+function getSubscriberStatus(sub) {
+  const paid = parseFloat(sub.paid_amount) || 0;
+  const due = parseFloat(sub.amount) || 0;
+  const debt = parseFloat(sub.debt) || 0;
+  
+  if (debt > 0) return 'debt';
+  if (paid >= due) return 'paid';
+  if (paid > 0) return 'partial';
+  return 'unpaid';
+}
+
+// ============ تحديث الصفحة الرئيسية ============
+function updateHomePage() {
+  updateHeaderSummary();
+  renderBoardFilters();
+  renderSubscribers();
+  populateSubscriberSelects();
+}
+
+function renderBoardFilters() {
+  const subs = getSubscribers();
+  const boards = [...new Set(subs.map(s => s.board).filter(Boolean))];
+  const container = document.getElementById('board-filters');
+  
+  let html = '<button class="board-pill ' + (currentBoardFilter === 'all' ? 'active' : '') + '" onclick="setBoardFilter(\'all\', this)">جميع البوردات</button>';
+  boards.forEach(b => {
+    html += '<button class="board-pill ' + (currentBoardFilter === b ? 'active' : '') + '" onclick="setBoardFilter(\'' + b + '\', this)">بورد ' + b + '</button>';
+  });
+  container.innerHTML = html;
+}
+
+function renderSubscribers() {
+  let subs = getSubscribers();
+  const search = (document.getElementById('search-input').value || '').toLowerCase();
+  
+  // فلترة بالبحث
+  if (search) {
+    subs = subs.filter(s => 
+      (s.subscriber_name || '').toLowerCase().includes(search) ||
+      (s.phone || '').includes(search)
+    );
+  }
+  
+  // فلترة بالحالة
+  if (currentStatusFilter !== 'all') {
+    subs = subs.filter(s => {
+      const status = getSubscriberStatus(s);
+      if (currentStatusFilter === 'paid') return status === 'paid' || status === 'partial';
+      if (currentStatusFilter === 'unpaid') return status === 'unpaid';
+      if (currentStatusFilter === 'debt') return s.debt > 0;
+      return true;
+    });
+  }
+  
+  // فلترة بالبورد
+  if (currentBoardFilter !== 'all') {
+    subs = subs.filter(s => s.board === currentBoardFilter);
+  }
+  
+  const list = document.getElementById('subscribers-list');
+  
+  if (subs.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">👥</div><div class="text">لا يوجد مشتركون مطابقون</div><button class="btn-add" onclick="openModal(\'add_subscriber\')">+ إضافة مشترك جديد</button></div>';
+    return;
+  }
+  
+  list.innerHTML = subs.map(s => {
+    const status = getSubscriberStatus(s);
+    const paid = parseFloat(s.paid_amount) || 0;
+    const due = parseFloat(s.amount) || 0;
+    const remaining = due - paid;
+    const initial = (s.subscriber_name || '?').charAt(0);
+    
+    let badgeText = 'غير مسدد';
+    let badgeClass = 'unpaid';
+    let amountText = formatNum(due);
+    
+    if (status === 'paid') { badgeText = 'مسدد'; badgeClass = 'paid'; amountText = formatNum(paid); }
+    else if (status === 'partial') { badgeText = 'جزئي'; badgeClass = 'partial'; amountText = formatNum(remaining) + ' متبقي'; }
+    else if (status === 'debt') { badgeText = 'دين سابق'; badgeClass = 'partial'; }
+    
+    return '<div class="subscriber-card ' + status + '" onclick="showSubscriberDetail(\'' + s.id + '\')">' +
+      '<div class="subscriber-avatar">' + initial + '</div>' +
+      '<div class="subscriber-info">' +
+        '<div class="subscriber-name">' + (s.subscriber_name || 'بدون اسم') + '</div>' +
+        '<div class="subscriber-meta">' +
+          '<span>⚡ ' + (s.amperes || 0) + 'A</span>' +
+          '<span>📋 بورد ' + (s.board || '?') + '</span>' +
+          '<span>🏷️ ' + (s.subscription_type || 'سكني') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="subscriber-amount">' +
+        '<div class="value">' + amountText + '</div>' +
+        '<div class="badge ' + badgeClass + '">' + badgeText + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ============ تفاصيل المشترك ============
+function showSubscriberDetail(id) {
+  const sub = getSubscribers().find(s => s.id === id);
+  if (!sub) return;
+  
+  selectedSubscriberId = id;
+  document.getElementById('detail-name').textContent = '👤 ' + (sub.subscriber_name || 'بدون اسم');
+  document.getElementById('detail-phone').textContent = sub.phone || 'غير مسجل';
+  document.getElementById('detail-amperes').textContent = (sub.amperes || 0) + ' أمبير';
+  document.getElementById('detail-type').textContent = sub.subscription_type || 'سكني';
+  document.getElementById('detail-board').textContent = 'بورد ' + (sub.board || '?');
+  document.getElementById('detail-amount').textContent = formatNum(sub.amount || 0) + ' د.ع';
+  
+  const status = getSubscriberStatus(sub);
+  const statusText = { paid: '✅ مسدد', partial: '🟡 تسديد جزئي', unpaid: '🔴 غير مسدد', debt: '⚠️ عليه دين' }[status];
+  document.getElementById('detail-status').textContent = statusText;
+  
+  document.getElementById('modal-subscriber_detail').classList.add('active');
+}
+
+function payForSelected() {
+  closeModal();
+  setTimeout(() => {
+    document.getElementById('pay-subscriber').value = selectedSubscriberId;
+    const sub = getSubscribers().find(s => s.id === selectedSubscriberId);
+    if (sub) {
+      const remaining = (sub.amount || 0) - (sub.paid_amount || 0);
+      document.getElementById('pay-amount').value = remaining;
+      document.getElementById('pay-paid').value = remaining;
+    }
+    openModal('payment');
+  }, 300);
+}
+
+function sendWhatsApp() {
+  const sub = getSubscribers().find(s => s.id === selectedSubscriberId);
+  if (!sub || !sub.phone) {
+    showToast('⚠️ لا يوجد رقم موبايل لهذا المشترك', 'error');
+    return;
+  }
+  
+  const status = getSubscriberStatus(sub);
+  const due = sub.amount || 0;
+  const paid = sub.paid_amount || 0;
+  const remaining = due - paid;
+  
+  let message = '';
+  if (status === 'paid') {
+    message = '🧾 *وصل تسديد - مولدة أمبير*\n\n' +
+      '👤 الزبون: ' + sub.subscriber_name + '\n' +
+      '⚡ الأمبيرات: ' + sub.amperes + 'A\n' +
+      '✅ المبلغ المسدد: ' + formatNum(paid) + ' د.ع\n\n' +
+      '_شكراً لتعاونكم 🙏_';
+  } else {
+    message = '🔔 *تذكير من مولدة أمبير*\n\n' +
+      'السلام عليكم *' + sub.subscriber_name + '*\n\n' +
+      '⚡ الأمبيرات: ' + sub.amperes + 'A\n' +
+      '💰 المبلغ المستحق: ' + formatNum(due) + ' د.ع\n' +
+      (paid > 0 ? '✅ المسدد: ' + formatNum(paid) + ' د.ع\n📊 المتبقي: ' + formatNum(remaining) + ' د.ع\n' : '') +
+      '\nيرجى التكرم بالتسديد. شكراً لتعاونكم 🙏';
+  }
+  
+  const phone = sub.phone.replace(/\D/g, '');
+  const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
+  window.open(url, '_blank');
+}
+
+// ============ ملء قوائم المشتركين ============
+function populateSubscriberSelects() {
+  const subs = getSubscribers();
+  const html = '<option value="">-- اختر مشترك --</option>' + 
+    subs.map(s => '<option value="' + s.id + '">' + s.subscriber_name + ' (' + s.amperes + 'A)</option>').join('');
+  
+  const paySelect = document.getElementById('pay-subscriber');
+  const debtSelect = document.getElementById('debt-subscriber');
+  if (paySelect) paySelect.innerHTML = html;
+  if (debtSelect) debtSelect.innerHTML = html;
+}
+
+// ============ التسعيرات ============
+function autoCalcPrice() {
+  const type = document.getElementById('sub-type').value;
+  const amperes = parseFloat(document.getElementById('sub-amperes').value) || 0;
+  const pricing = getPricing();
+  const total = amperes * (pricing[type] || 0);
+  document.getElementById('sub-amount').value = total;
+}
+
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'sub-amperes') autoCalcPrice();
+});
+
+function updatePricingPage() {
+  const pricing = getPricing();
+  document.getElementById('price-residential').textContent = formatNum(pricing['سكني']);
+  document.getElementById('price-commercial').textContent = formatNum(pricing['تجاري']);
+  document.getElementById('price-industrial').textContent = formatNum(pricing['صناعي']);
+  document.getElementById('price-special').textContent = formatNum(pricing['خاص']);
+}
+
+function editPricing(type, label) {
+  const types = { residential: 'سكني', commercial: 'تجاري', industrial: 'صناعي', special: 'خاص' };
+  selectedPricingType = types[type];
+  document.getElementById('pricing-label').textContent = 'السعر للأمبير الواحد - ' + label;
+  document.getElementById('pricing-input').value = getPricing()[selectedPricingType];
+  document.getElementById('modal-pricing').classList.add('active');
+}
+
+function savePricing() {
+  const value = parseFloat(document.getElementById('pricing-input').value) || 0;
+  const pricing = getPricing();
+  pricing[selectedPricingType] = value;
+  localStorage.setItem('pricing', JSON.stringify(pricing));
+  closeModal();
+  updatePricingPage();
+  showToast('✅ تم تحديث التسعيرة', 'success');
+}
+
+// ============ صفحة الإحصائيات ============
+function updateStatsPage() {
+  const subs = getSubscribers();
+  const activities = getActivities();
+  const expenses = activities.filter(a => a.action_type === 'expense');
+  const hours = activities.filter(a => a.action_type === 'operating_hours');
+  
+  const totalDue = subs.reduce((s,a) => s + (parseFloat(a.amount) || 0), 0);
+  const totalPaid = subs.reduce((s,a) => s + (parseFloat(a.paid_amount) || 0), 0);
+  const totalRemaining = totalDue - totalPaid;
+  const totalExpenses = expenses.reduce((s,a) => s + (parseFloat(a.expense_amount) || 0), 0);
+  const profit = totalPaid - totalExpenses;
+  
+  document.getElementById('profit-value').textContent = formatNum(profit);
+  document.getElementById('profit-revenue').textContent = formatNum(totalPaid);
+  document.getElementById('profit-expenses').textContent = formatNum(totalExpenses);
+  document.getElementById('profit-card').classList.toggle('loss', profit < 0);
+  document.getElementById('profit-label').textContent = profit < 0 ? '📉 صافي الخسارة' : '📈 صافي الربح المتوقع';
+  
+  // الدوائر
+  const paidCount = subs.filter(s => isPaid(s)).length;
+  const unpaidCount = subs.length - paidCount;
+  const total = subs.length || 1;
+  
+  const circumference = 251.2;
+  document.getElementById('ring-paid').setAttribute('stroke-dasharray', 
+    (circumference * paidCount / total) + ' ' + circumference);
+  document.getElementById('ring-paid').setAttribute('transform', 'rotate(-90 50 50)');
+  document.getElementById('ring-unpaid').setAttribute('stroke-dasharray', 
+    (circumference * unpaidCount / total) + ' ' + circumference);
+  document.getElementById('ring-unpaid').setAttribute('transform', 'rotate(-90 50 50)');
+  document.getElementById('ring-paid-num').textContent = paidCount;
+  document.getElementById('ring-unpaid-num').textContent = unpaidCount;
+  
+  // Donut نسبة التحصيل
+  const collectionRate = totalDue > 0 ? (totalPaid / totalDue) : 0;
+  const dashLength = circumference * collectionRate;
+  document.getElementById('donut-collection').setAttribute('stroke-dasharray', dashLength + ' ' + (circumference - dashLength));
+  document.getElementById('donut-percent').textContent = Math.round(collectionRate * 100) + '%';
+  document.getElementById('info-paid').textContent = formatNum(totalPaid);
+  document.getElementById('info-remaining').textContent = formatNum(totalRemaining);
+  document.getElementById('info-total').textContent = formatNum(totalDue);
+  
+  // المشتركون حسب النوع
+  const types = { 'سكني': 0, 'تجاري': 0, 'صناعي': 0, 'خاص': 0 };
+  subs.forEach(s => { if (types[s.subscription_type] !== undefined) types[s.subscription_type]++; });
+  document.getElementById('cat-residential').textContent = types['سكني'];
+  document.getElementById('cat-commercial').textContent = types['تجاري'];
+  document.getElementById('cat-industrial').textContent = types['صناعي'];
+  document.getElementById('cat-special').textContent = types['خاص'];
+  
+  // المصاريف
+  const expTypes = {};
+  expenses.forEach(e => {
+    const t = e.expense_type || 'أخرى';
+    expTypes[t] = (expTypes[t] || 0) + (parseFloat(e.expense_amount) || 0);
+  });
+  document.getElementById('exp-fuel').textContent = formatNum(expTypes['وقود (كاز)'] || 0);
+  document.getElementById('exp-maintenance').textContent = formatNum(expTypes['صيانة'] || 0);
+  document.getElementById('exp-salaries').textContent = formatNum(expTypes['رواتب'] || 0);
+  const otherExp = Object.entries(expTypes).filter(e => ['وقود (كاز)','صيانة','رواتب'].indexOf(e[0]) === -1).reduce((s,e) => s + e[1], 0);
+  document.getElementById('exp-other').textContent = formatNum(otherExp);
+  
+  // ساعات
+  const totalHours = hours.reduce((s,h) => s + (parseFloat(h.amount) || 0), 0);
+  document.getElementById('hours-total').textContent = totalHours.toFixed(1);
+  const uniqueDays = new Set(hours.map(h => h.timestamp.split('T')[0])).size;
+  const avgHours = uniqueDays > 0 ? (totalHours / uniqueDays) : 0;
+  document.getElementById('hours-avg').textContent = avgHours.toFixed(1);
+  
+  renderBarChart(expenses);
+}
+
+function renderBarChart(expenses) {
+  const days = [];
+  const dayNames = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateKey = d.toISOString().split('T')[0];
+    const total = expenses.filter(e => e.timestamp.startsWith(dateKey)).reduce((s,e) => s + (parseFloat(e.expense_amount) || 0), 0);
+    days.push({ label: dayNames[d.getDay()].substring(0,3), value: total });
+  }
+  const max = Math.max.apply(null, days.map(d => d.value).concat([1]));
+  document.getElementById('expenses-bars').innerHTML = days.map(d => {
+    const heightPct = (d.value / max) * 100;
+    return '<div class="bar-col"><div class="bar-value">' + (d.value > 0 ? formatShort(d.value) : '') + '</div><div class="bar" style="height: ' + heightPct + '%;"></div><div class="bar-label">' + d.label + '</div></div>';
+  }).join('');
+}
+
+// ============ السجل ============
+function updateHistoryPage() {
+  const activities = getActivities();
+  const list = document.getElementById('full-history');
+  if (activities.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📋</div><div class="text">لا توجد عمليات مسجلة</div></div>';
+    return;
+  }
+  list.innerHTML = activities.map(renderActivity).join('');
+}
+
+function renderActivity(a) {
+  const icons = { 'payment': '💰', 'add_subscriber': '👤', 'expense': '💸', 'operating_hours': '⏱️', 'debt_payment': '💳' };
+  const titles = {
+    'payment': 'تسديد - ' + (a.subscriber_name || ''),
+    'add_subscriber': 'مشترك جديد - ' + (a.subscriber_name || ''),
+    'expense': 'مصروف - ' + (a.expense_type || ''),
+    'operating_hours': 'ساعات تشغيل',
+    'debt_payment': 'تسديد دين - ' + (a.subscriber_name || '')
+  };
+  const amount = a.paid_amount || a.expense_amount || a.amount || '';
+  const isExpense = a.action_type === 'expense';
+  const date = new Date(a.timestamp);
+  const time = date.toLocaleString('ar-IQ', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+  return '<div class="activity-item"><div class="activity-icon">' + (icons[a.action_type] || '📝') + '</div><div class="activity-content"><div class="activity-title">' + (titles[a.action_type] || a.action_type) + '</div><div class="activity-meta">' + time + ' · ' + (a.operator_name || '') + '</div></div>' + (amount ? '<div class="activity-amount ' + (isExpense ? 'red' : '') + '">' + (isExpense ? '-' : '+') + formatNum(amount) + '</div>' : '') + '</div>';
+}
+
+// ============ الأدوات المساعدة ============
+function formatNum(num) { return new Intl.NumberFormat('en-US').format(Math.round(num || 0)); }
+function formatShort(num) { 
+  if (num >= 1000000) return (num/1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num/1000).toFixed(0) + 'K';
+  return num.toString();
+}
+
+function showToast(message, type) {
+  type = type || 'success';
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ============ FAB Menu ============
+function toggleFabMenu() {
+  document.getElementById('fab-menu').classList.toggle('active');
+}
+
+// ============ المودالات ============
+function openModal(type) {
+  document.getElementById('fab-menu').classList.remove('active');
+  if (['payment', 'debt_payment'].includes(type)) {
+    populateSubscriberSelects();
+  }
+  document.getElementById('modal-' + type).classList.add('active');
+}
+
+function closeModal() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(); });
+});
+
+// ============ البحث ============
+function openSearch() {
+  switchTab('home', null);
+  setTimeout(() => document.getElementById('search-input').focus(), 100);
+}
+
+// ============ الإعدادات ============
+function loadSettings() {
+  document.getElementById('webhookUrl').value = localStorage.getItem('webhookUrl') || '';
+  document.getElementById('operatorName').value = localStorage.getItem('operatorName') || '';
+  document.getElementById('generatorName').value = localStorage.getItem('generatorName') || 'مولدة أمبير';
+  document.getElementById('ownerPhone').value = localStorage.getItem('ownerPhone') || '';
+  document.getElementById('ownerAddress').value = localStorage.getItem('ownerAddress') || '';
+}
+
+function saveSettings() {
+  localStorage.setItem('webhookUrl', document.getElementById('webhookUrl').value.trim());
+  localStorage.setItem('operatorName', document.getElementById('operatorName').value.trim());
+  localStorage.setItem('generatorName', document.getElementById('generatorName').value.trim());
+  localStorage.setItem('ownerPhone', document.getElementById('ownerPhone').value.trim());
+  localStorage.setItem('ownerAddress', document.getElementById('ownerAddress').value.trim());
+  showToast('✅ تم حفظ الإعدادات', 'success');
+}
+
+function clearLocalData() {
+  if (confirm('⚠️ سيتم مسح جميع البيانات (المشتركون، التسديدات، المصاريف). متأكد؟')) {
+    localStorage.removeItem('activities');
+    localStorage.removeItem('subscribers');
+    showToast('✅ تم مسح البيانات', 'success');
+    updateHomePage();
+  }
+}
+
+function exportData() {
+  const data = {
+    subscribers: getSubscribers(),
+    activities: getActivities(),
+    pricing: getPricing(),
+    exported_at: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ampere-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ تم تصدير البيانات', 'success');
+}
+
+// ============ إرسال البيانات ============
+async function submitForm(type) {
+  const url = localStorage.getItem('webhookUrl');
+  const operator = localStorage.getItem('operatorName') || 'النظام';
+  let data = { action_type: type, operator_name: operator };
+  
+  if (type === 'payment') {
+    const subId = document.getElementById('pay-subscriber').value;
+    if (!subId) { showToast('⚠️ يرجى اختيار مشترك', 'error'); return; }
+    const sub = getSubscribers().find(s => s.id === subId);
+    if (!sub) { showToast('⚠️ مشترك غير صالح', 'error'); return; }
+    
+    data.subscriber_id = subId;
+    data.subscriber_name = sub.subscriber_name;
+    data.phone = sub.phone || '';
+    data.amount = parseFloat(document.getElementById('pay-amount').value) || 0;
+    data.paid_amount = parseFloat(document.getElementById('pay-paid').value) || 0;
+    data.notes = document.getElementById('pay-notes').value;
+    
+    if (!data.paid_amount) { showToast('⚠️ أدخل المبلغ المسدد', 'error'); return; }
+    
+    // تحديث المشترك محلياً
+    updateSubscriber(subId, { paid_amount: (parseFloat(sub.paid_amount) || 0) + data.paid_amount });
+  }
+  else if (type === 'add_subscriber') {
+    data.subscriber_name = document.getElementById('sub-name').value;
+    data.phone = document.getElementById('sub-phone').value;
+    data.amperes = parseFloat(document.getElementById('sub-amperes').value) || 0;
+    data.subscription_type = document.getElementById('sub-type').value;
+    data.board = document.getElementById('sub-board').value;
+    data.amount = parseFloat(document.getElementById('sub-amount').value) || 0;
+    if (!data.subscriber_name || !data.amperes) { showToast('⚠️ أدخل الاسم والأمبيرات', 'error'); return; }
+    saveSubscriber(data);
+  }
+  else if (type === 'expense') {
+    data.expense_type = document.getElementById('exp-type').value;
+    data.expense_amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+    data.notes = document.getElementById('exp-notes').value;
+    if (!data.expense_amount) { showToast('⚠️ أدخل المبلغ', 'error'); return; }
+  }
+  else if (type === 'operating_hours') {
+    data.amount = parseFloat(document.getElementById('op-hours').value) || 0;
+    data.notes = document.getElementById('op-notes').value;
+    if (!data.amount) { showToast('⚠️ أدخل عدد الساعات', 'error'); return; }
+  }
+  else if (type === 'debt_payment') {
+    const subId = document.getElementById('debt-subscriber').value;
+    if (!subId) { showToast('⚠️ اختر مشترك', 'error'); return; }
+    const sub = getSubscribers().find(s => s.id === subId);
+    data.subscriber_id = subId;
+    data.subscriber_name = sub.subscriber_name;
+    data.phone = sub.phone || '';
+    data.paid_amount = parseFloat(document.getElementById('debt-amount').value) || 0;
+    data.notes = document.getElementById('debt-notes').value;
+    if (!data.paid_amount) { showToast('⚠️ أدخل المبلغ', 'error'); return; }
+    updateSubscriber(subId, { debt: Math.max(0, (parseFloat(sub.debt) || 0) - data.paid_amount) });
+  }
+  
+  saveActivity(data);
+  
+  // إرسال للـ n8n إذا كان متاحاً
+  if (url) {
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      showToast('✅ تم الحفظ والإرسال!', 'success');
+    } catch (err) {
+      showToast('💾 حُفظ محلياً (لا يوجد اتصال)', 'success');
+    }
+  } else {
+    showToast('💾 تم الحفظ محلياً', 'success');
+  }
+  
+  closeModal();
+  clearForms();
+  updateHomePage();
+}
+
+function clearForms() {
+  document.querySelectorAll('.modal input[type="text"], .modal input[type="number"], .modal input[type="tel"], .modal textarea').forEach(el => {
+    if (el.id !== 'sub-board') el.value = '';
+  });
+}
+
+// ============ بدء التشغيل ============
+loadSettings();
+updateHomePage();
+
+// ============ ميزة طباعة الوصولات ============
+function openPrintOptions() {
+  if (!selectedSubscriberId) {
+    showToast('⚠️ اختر مشترك أولاً', 'error');
+    return;
+  }
+  closeModal();
+  setTimeout(() => {
+    document.getElementById('modal-print_options').classList.add('active');
+  }, 250);
+}
+
+function fillReceiptData(format) {
+  const sub = getSubscribers().find(s => s.id === selectedSubscriberId);
+  if (!sub) return null;
+  
+  const now = new Date();
+  const receiptNo = 'AMP-' + now.getTime().toString().slice(-8);
+  const dateStr = now.toLocaleDateString('ar-IQ', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  const timeStr = now.toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' });
+  
+  const due = parseFloat(sub.amount) || 0;
+  const paid = parseFloat(sub.paid_amount) || 0;
+  const remaining = Math.max(0, due - paid);
+  
+  const operator = localStorage.getItem('operatorName') || 'غير محدد';
+  const genName = localStorage.getItem('generatorName') || 'مولدة أمبير';
+  const ownerPhone = localStorage.getItem('ownerPhone') || '';
+  const ownerAddress = localStorage.getItem('ownerAddress') || '';
+  
+  const prefix = format === 'thermal' ? 'rt' : 'ra';
+  
+  document.getElementById(prefix + '-receipt-no').textContent = receiptNo;
+  document.getElementById(prefix + '-date').textContent = dateStr;
+  document.getElementById(prefix + '-time').textContent = timeStr;
+  document.getElementById(prefix + '-name').textContent = sub.subscriber_name || '-';
+  document.getElementById(prefix + '-phone').textContent = sub.phone || 'غير مسجل';
+  document.getElementById(prefix + '-amperes').textContent = (sub.amperes || 0) + ' أمبير';
+  document.getElementById(prefix + '-type').textContent = sub.subscription_type || 'سكني';
+  document.getElementById(prefix + '-board').textContent = 'بورد ' + (sub.board || '?');
+  document.getElementById(prefix + '-operator').textContent = operator;
+  document.getElementById(prefix + '-due').textContent = formatNum(due) + ' د.ع';
+  document.getElementById(prefix + '-paid').textContent = formatNum(paid) + ' د.ع';
+  document.getElementById(prefix + '-remaining').textContent = formatNum(remaining) + ' د.ع';
+  document.getElementById(prefix + '-total').textContent = formatNum(paid);
+  document.getElementById(prefix + '-gen-name').textContent = genName;
+  document.getElementById(prefix + '-gen-info').textContent = ownerAddress || '-';
+  
+  if (format === 'thermal') {
+    document.getElementById('rt-contact').textContent = ownerPhone || 'غير مسجل';
+  } else {
+    document.getElementById('ra-contact').textContent = ownerPhone ? '📞 ' + ownerPhone : '';
+  }
+  
+  // توليد QR Code
+  const qrContainerId = format === 'thermal' ? 'qrcode-thermal' : 'qrcode-a4';
+  const qrContainer = document.getElementById(qrContainerId);
+  qrContainer.innerHTML = '';
+  const qrData = JSON.stringify({
+    no: receiptNo,
+    name: sub.subscriber_name,
+    paid: paid,
+    date: dateStr,
+    gen: genName
+  });
+  try {
+    new QRCode(qrContainer, {
+      text: qrData,
+      width: format === 'thermal' ? 80 : 100,
+      height: format === 'thermal' ? 80 : 100,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch (e) {
+    qrContainer.textContent = '[QR]';
+  }
+  
+  return { sub, receiptNo, dateStr, paid, remaining, due };
+}
+
+async function generateReceipt(format, action) {
+  showToast('⏳ جاري إعداد الوصل...', 'success');
+  
+  const data = fillReceiptData(format);
+  if (!data) {
+    showToast('❌ خطأ في البيانات', 'error');
+    return;
+  }
+  
+  // انتظر قليلاً ليرسم QR Code
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  const elementId = format === 'thermal' ? 'receipt-thermal' : 'receipt-a4';
+  const element = document.getElementById(elementId);
+  
+  // إظهار العنصر مؤقتاً للتصوير
+  element.style.position = 'fixed';
+  element.style.top = '0';
+  element.style.left = '0';
+  element.style.zIndex = '-1';
+  element.style.opacity = '1';
+  
+  try {
+    // تصوير الوصل
+    const canvas = await html2canvas(element.querySelector(format === 'thermal' ? '.receipt-thermal' : '.receipt-a4'), {
+      scale: 2,
+      backgroundColor: '#ffffff',
+      logging: false,
+      useCORS: true
+    });
+    
+    // إخفاء العنصر مرة أخرى
+    element.style.position = 'fixed';
+    element.style.top = '-9999px';
+    element.style.left = '-9999px';
+    element.style.zIndex = 'auto';
+    
+    const imgData = canvas.toDataURL('image/png');
+    
+    // إنشاء PDF
+    const { jsPDF } = window.jspdf;
+    let pdf;
+    
+    if (format === 'thermal') {
+      // 80mm × ارتفاع تلقائي
+      const pdfWidth = 80;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    } else {
+      // A4
+      pdf = new jsPDF('portrait', 'mm', 'a4');
+      const pdfWidth = 210;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, Math.min(pdfHeight, 297));
+    }
+    
+    const fileName = 'وصل-' + (data.sub.subscriber_name || 'مشترك') + '-' + data.receiptNo + '.pdf';
+    
+    // تنفيذ الإجراء المطلوب
+    if (action === 'pdf') {
+      pdf.save(fileName);
+      showToast('✅ تم تحميل الوصل!', 'success');
+    } 
+    else if (action === 'whatsapp') {
+      // حفظ PDF + فتح واتساب برسالة
+      pdf.save(fileName);
+      
+      const phone = (data.sub.phone || '').replace(/\D/g, '');
+      if (!phone) {
+        showToast('⚠️ لا يوجد رقم موبايل', 'error');
+        closeModal();
+        return;
+      }
+      
+      const message = '🧾 *وصل تسديد - ' + (localStorage.getItem('generatorName') || 'مولدة أمبير') + '*\n\n' +
+        '👤 الزبون: ' + data.sub.subscriber_name + '\n' +
+        '⚡ الأمبيرات: ' + (data.sub.amperes || 0) + 'A\n' +
+        '🏷️ النوع: ' + (data.sub.subscription_type || 'سكني') + '\n\n' +
+        '✅ المبلغ المسدد: ' + formatNum(data.paid) + ' د.ع\n' +
+        (data.remaining > 0 ? '📊 المتبقي: ' + formatNum(data.remaining) + ' د.ع\n' : '') +
+        '📅 التاريخ: ' + data.dateStr + '\n' +
+        '🧾 رقم الوصل: ' + data.receiptNo + '\n\n' +
+        '_تم تحميل وصل PDF تفصيلي - أرفقه مع هذه الرسالة_\n\n' +
+        '⚡ شكراً لتعاملكم معنا 🙏';
+      
+      const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
+      
+      setTimeout(() => {
+        window.open(url, '_blank');
+        showToast('✅ تم تحميل PDF + فتح واتساب', 'success');
+      }, 500);
+    }
+    else if (action === 'share') {
+      // محاولة استخدام Web Share API
+      try {
+        const blob = pdf.output('blob');
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'وصل تسديد - أمبير',
+            text: 'وصل تسديد للمشترك ' + data.sub.subscriber_name,
+            files: [file]
+          });
+          showToast('✅ تم المشاركة!', 'success');
+        } else {
+          // fallback: تحميل الملف
+          pdf.save(fileName);
+          showToast('💾 تم تحميل الوصل (المشاركة غير مدعومة)', 'success');
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          pdf.save(fileName);
+          showToast('💾 تم تحميل الوصل', 'success');
+        }
+      }
+    }
+    
+    closeModal();
+    
+  } catch (err) {
+    showToast('❌ خطأ في إنشاء الوصل: ' + err.message, 'error');
+    console.error(err);
+  }
+}
+
+// تسجيل Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+</script>
+
+</body>
+</html>
