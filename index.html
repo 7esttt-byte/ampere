@@ -6,6 +6,15 @@
 <meta name="theme-color" content="#0F766E">
 <title>⚡ أمبير - نظام إدارة المولدات الكهربائية</title>
 
+<!-- PWA Manifest -->
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" href="./favicon.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="أمبير">
+<meta name="mobile-web-app-capable" content="yes">
+
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@600;700;900&display=swap" rel="stylesheet">
 
 <!-- مكتبات الطباعة -->
@@ -80,7 +89,31 @@ body {
   margin-bottom: 16px;
 }
 
-.logo-text-block h1 {
+.logo-text-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon-wrap {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.4));
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+.logo-icon-svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.4)); }
+  50% { filter: drop-shadow(0 6px 18px rgba(245, 158, 11, 0.6)); }
+}
+
+.logo-text-inner h1 {
   font-size: 28px;
   font-weight: 900;
   letter-spacing: -1px;
@@ -96,7 +129,7 @@ body {
   filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.5));
 }
 
-.logo-text-block p {
+.logo-text-inner p {
   font-size: 11px;
   opacity: 0.85;
   font-weight: 500;
@@ -313,16 +346,70 @@ body {
 .subscriber-card {
   background: var(--bg-card);
   border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.subscriber-card:active { transform: scale(0.99); }
+
+.subscriber-main {
+  padding: 14px;
   display: flex;
   align-items: center;
   gap: 12px;
-  position: relative;
-  overflow: hidden;
+  cursor: pointer;
 }
+
+.subscriber-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-soft);
+}
+
+.sub-action-btn {
+  background: transparent;
+  border: none;
+  padding: 10px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.sub-action-btn:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 1px;
+  background: var(--border);
+}
+
+.sub-action-btn:active { transform: scale(0.95); }
+
+.sub-action-btn .icon { font-size: 14px; }
+
+.sub-action-btn.edit { color: #2563EB; }
+.sub-action-btn.edit:active { background: #DBEAFE; }
+
+.sub-action-btn.whatsapp { color: #16A34A; }
+.sub-action-btn.whatsapp:active { background: #DCFCE7; }
+
+.sub-action-btn.delete { color: var(--danger); }
+.sub-action-btn.delete:active { background: #FEE2E2; }
 
 .subscriber-card::before {
   content: '';
@@ -1279,18 +1366,475 @@ body {
   .receipt-container, .receipt-container * { visibility: visible; }
   .receipt-container { position: absolute; left: 0; top: 0; }
 }
+
+/* ============ شاشة تسجيل الدخول (Login Overlay) ============ */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: opacity 0.6s, visibility 0.6s;
+}
+
+.auth-overlay.hidden { opacity: 0; visibility: hidden; }
+
+.auth-overlay::before {
+  content: '⚡';
+  position: absolute;
+  font-size: 400px;
+  opacity: 0.05;
+  color: var(--gold-light);
+  top: -100px;
+  right: -50px;
+  pointer-events: none;
+}
+
+.auth-overlay::after {
+  content: '⚡';
+  position: absolute;
+  font-size: 300px;
+  opacity: 0.05;
+  color: var(--gold-light);
+  bottom: -50px;
+  left: -50px;
+  pointer-events: none;
+  transform: rotate(180deg);
+}
+
+.auth-card {
+  background: white;
+  border-radius: 28px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+  animation: slideInAuth 0.5s ease-out;
+}
+
+@keyframes slideInAuth {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.auth-logo-wrap {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+.auth-logo-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 8px 24px rgba(245, 158, 11, 0.3));
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* الأيقونة القديمة (محتفظ بها للتوافق) */
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: white;
+  box-shadow: 0 12px 32px rgba(245, 158, 11, 0.4);
+}
+
+.auth-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 4px;
+  font-family: 'Cairo', sans-serif;
+}
+
+.auth-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.auth-error, .auth-success {
+  display: none;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-error {
+  background: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: var(--danger);
+}
+
+.auth-error.show { display: flex; animation: shake 0.4s; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.auth-success {
+  background: #DCFCE7;
+  border: 1px solid #86EFAC;
+  color: var(--primary);
+}
+
+.auth-success.show { display: flex; }
+
+.auth-form-group { margin-bottom: 14px; }
+
+.auth-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  font-size: 16px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 8px;
+  box-shadow: 0 4px 16px rgba(15, 118, 110, 0.3);
+  position: relative;
+}
+
+.auth-btn:active { transform: scale(0.96); }
+.auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.auth-btn.loading .auth-btn-text { opacity: 0; }
+.auth-btn.loading .auth-spinner { display: block; }
+
+.auth-spinner {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.auth-footer .badge {
+  display: inline-block;
+  background: var(--bg-soft);
+  color: var(--primary);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* ============ معلومات المستخدم في الترويسة ============ */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 8px 14px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.user-info .avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 13px;
+  color: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.user-info .details { flex: 1; }
+.user-info .name { font-weight: 700; font-size: 13px; }
+.user-info .role { font-size: 10px; opacity: 0.8; }
+
+.user-info .logout-btn {
+  background: rgba(220, 38, 38, 0.2);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  color: #FCA5A5;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.user-info .logout-btn:active { transform: scale(0.95); }
+
+/* ============ User Badge في الترويسة ============ */
+.user-badge {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 180px;
+}
+
+.user-badge .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-badge.admin { border-color: var(--gold-light); background: rgba(245, 184, 61, 0.2); }
+.user-badge.admin::before { content: '👑'; font-size: 14px; }
+.user-badge:not(.admin)::before { content: '👤'; font-size: 14px; }
+
+/* ============ زر تسجيل الخروج ============ */
+.btn-logout {
+  background: linear-gradient(135deg, var(--danger), #EF4444) !important;
+  color: white !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
 </style>
 </head>
 <body>
+
+<!-- ============ شاشة تسجيل الدخول ============ -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo-wrap">
+      <svg class="auth-logo-svg" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- تدرج الخلفية الزجاجية -->
+          <linearGradient id="glassBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1e3a8a" stop-opacity="0.95"/>
+            <stop offset="50%" stop-color="#1e40af" stop-opacity="0.85"/>
+            <stop offset="100%" stop-color="#0c1e4d" stop-opacity="0.95"/>
+          </linearGradient>
+          
+          <!-- إضاءة علوية -->
+          <linearGradient id="topShine" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+          
+          <!-- تدرج البرق الذهبي -->
+          <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="50%" stop-color="#facc15"/>
+            <stop offset="100%" stop-color="#eab308"/>
+          </linearGradient>
+          
+          <!-- توهج البرق -->
+          <filter id="boltGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feFlood flood-color="#fbbf24" flood-opacity="0.8"/>
+            <feComposite in2="blur" operator="in" result="glow"/>
+            <feMerge>
+              <feMergeNode in="glow"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          
+          <!-- ظل الأيقونة -->
+          <filter id="iconShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feOffset dy="6" result="shadow"/>
+            <feFlood flood-color="#000" flood-opacity="0.4"/>
+            <feComposite in2="shadow" operator="in"/>
+            <feMerge>
+              <feMergeNode/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        <!-- خلفية الأيقونة الزجاجية -->
+        <g filter="url(#iconShadow)">
+          <rect x="14" y="14" width="100" height="100" rx="26" ry="26"
+                fill="url(#glassBg)" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.8"/>
+          
+          <!-- إضاءة علوية زجاجية -->
+          <rect x="20" y="20" width="88" height="42" rx="20" ry="20"
+                fill="url(#topShine)"/>
+          
+          <!-- توهج داخلي أزرق -->
+          <rect x="22" y="22" width="84" height="84" rx="22" ry="22"
+                fill="none" stroke="#3b82f6" stroke-width="0.5" stroke-opacity="0.5"/>
+          
+          <!-- نقطة ضوء صغيرة (انعكاس زجاجي) -->
+          <ellipse cx="34" cy="28" rx="6" ry="3" fill="#ffffff" fill-opacity="0.6"/>
+          
+          <!-- البرق ⚡ -->
+          <g filter="url(#boltGlow)">
+            <path d="M 72 22 L 48 64 L 60 64 L 54 106 L 80 60 L 68 60 Z"
+                  fill="url(#boltGrad)" 
+                  stroke="#fef9c3" 
+                  stroke-width="0.8"
+                  stroke-linejoin="round"/>
+          </g>
+          
+          <!-- انعكاس فاتح على البرق -->
+          <path d="M 72 22 L 58 50 L 64 50 L 60 60 L 68 36 Z"
+                fill="#ffffff" fill-opacity="0.4"/>
+        </g>
+      </svg>
+    </div>
+    <div class="auth-title">أمبير</div>
+    <div class="auth-subtitle">🔐 تسجيل الدخول إلى نظام إدارة المولدات</div>
+    
+    <div class="auth-error" id="authError">
+      <span>⚠️</span>
+      <span id="authErrorMsg">بيانات الدخول غير صحيحة</span>
+    </div>
+    
+    <div class="auth-success" id="authSuccess">
+      <span>✅</span>
+      <span id="authSuccessMsg">تم تسجيل الدخول بنجاح</span>
+    </div>
+    
+    <form id="authForm" onsubmit="return false;">
+      <div class="auth-form-group">
+        <label class="auth-label">اسم المستخدم</label>
+        <input type="text" id="authUsername" class="auth-input" 
+               placeholder="ادخل اسم المستخدم" autocomplete="username" 
+               dir="ltr" required>
+      </div>
+      
+      <div class="auth-form-group">
+        <label class="auth-label">كلمة المرور</label>
+        <input type="password" id="authPassword" class="auth-input" 
+               placeholder="••••••••" autocomplete="current-password" 
+               dir="ltr" required>
+      </div>
+      
+      <button type="submit" class="auth-btn" id="authBtn" onclick="handleLogin()">
+        <span class="auth-spinner"></span>
+        <span class="auth-btn-text">🚀 دخول</span>
+      </button>
+    </form>
+    
+    <div class="auth-footer">
+      <div>⚡ نظام أمبير - إدارة احترافية</div>
+    </div>
+  </div>
+</div>
+
 
 <!-- ============ الترويسة ============ -->
 <div class="header">
   <div class="header-top">
     <div class="logo-text-block">
-      <h1><span class="bolt">⚡</span> أمبير</h1>
-      <p>نظام إدارة المولدات الكهربائية</p>
+      <div class="logo-icon-wrap">
+        <svg class="logo-icon-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="hdrGlassBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1e3a8a" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#0c1e4d" stop-opacity="0.95"/>
+            </linearGradient>
+            <linearGradient id="hdrBoltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fef08a"/>
+              <stop offset="100%" stop-color="#eab308"/>
+            </linearGradient>
+          </defs>
+          <rect x="6" y="6" width="52" height="52" rx="14" ry="14"
+                fill="url(#hdrGlassBg)" stroke="#60a5fa" stroke-width="1" stroke-opacity="0.6"/>
+          <rect x="9" y="9" width="46" height="22" rx="11" ry="11"
+                fill="#ffffff" fill-opacity="0.2"/>
+          <ellipse cx="17" cy="14" rx="3" ry="1.5" fill="#ffffff" fill-opacity="0.5"/>
+          <path d="M 38 12 L 24 32 L 30 32 L 27 52 L 41 30 L 35 30 Z"
+                fill="url(#hdrBoltGrad)" stroke="#fef9c3" stroke-width="0.5"/>
+        </svg>
+      </div>
+      <div class="logo-text-inner">
+        <h1>أمبير</h1>
+        <p>نظام إدارة المولدات الكهربائية</p>
+      </div>
     </div>
     <div class="header-icons">
+      <div class="user-badge" id="userBadge">
+        <span class="name" id="userBadgeName">مستخدم</span>
+      </div>
       <button class="header-icon-btn" onclick="openSearch()">🔍</button>
       <button class="header-icon-btn" onclick="switchTab('settings', null)">⚙️</button>
     </div>
@@ -1310,6 +1854,16 @@ body {
       <div class="label">غير واصل</div>
       <div class="value red" id="hdr-unpaid">0</div>
     </div>
+  </div>
+  
+  <!-- معلومات المستخدم المسجّل دخوله -->
+  <div class="user-info" id="userInfo">
+    <div class="avatar" id="userAvatar">?</div>
+    <div class="details">
+      <div class="name" id="userName">-</div>
+      <div class="role" id="userRole">-</div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 خروج</button>
   </div>
 </div>
 
@@ -1550,7 +2104,7 @@ body {
       <div class="pricing-icon commercial">🏢</div>
       <div class="text">
         <div class="name">تجاري</div>
-        <div class="meta">للمحلات ومكاتب</div>
+        <div class="meta">للمحلات والمكاتب</div>
       </div>
     </div>
     <div class="pricing-value"><span id="price-commercial">15,000</span> د.ع</div>
@@ -1642,7 +2196,7 @@ body {
   
   <div style="text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 11px;">
     <div style="font-weight: 700; color: var(--primary);">⚡ أمبير v4.0 Pro</div>
-    <div style="margin-top: 4px;">د. وسام الجبوري - 2026</div>
+    <div style="margin-top: 4px;">د. وسام الجابري - 2026</div>
   </div>
 </div>
 
@@ -2095,6 +2649,185 @@ body {
 </div>
 
 <script>
+// ============ نظام المصادقة (Authentication) ============
+const AUTH_KEY = 'ampere_auth';
+const AUTH_USER_KEY = 'ampere_auth_user';
+const SESSION_KEY = 'ampere_session';
+
+// 🔐 رابط Login المدمج (ثابت)
+const FIXED_LOGIN_WEBHOOK = 'https://wissamaljaberi.app.n8n.cloud/webhook/amper-login';
+
+// بيانات الجلسة الحالية
+let currentSession = {
+  user_id: null,
+  username: null,
+  full_name: null,
+  role: null,
+  sheet_id: null
+};
+
+function loadSession() {
+  try {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (saved) currentSession = Object.assign({}, currentSession, JSON.parse(saved));
+  } catch (e) {}
+}
+
+function saveSession() {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(currentSession)); } catch (e) {}
+}
+
+function clearSession() {
+  currentSession = { user_id: null, username: null, full_name: null, role: null, sheet_id: null };
+  try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+}
+
+function isAuthenticated() {
+  try { return localStorage.getItem(AUTH_KEY) === 'true'; } catch (e) { return false; }
+}
+
+function updateUserInfo() {
+  const info = document.getElementById('userInfo');
+  if (!info) return;
+  const name = currentSession.full_name || currentSession.username || 'مستخدم';
+  const role = currentSession.role === 'admin' ? '👑 مدير' : '👤 مشترك';
+  const initial = (name.charAt(0) || '?').toUpperCase();
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userRole').textContent = role;
+  document.getElementById('userAvatar').textContent = initial;
+}
+
+async function handleLogin() {
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const btn = document.getElementById('authBtn');
+  const errorEl = document.getElementById('authError');
+  const errorMsg = document.getElementById('authErrorMsg');
+  const successEl = document.getElementById('authSuccess');
+  const successMsg = document.getElementById('authSuccessMsg');
+  
+  errorEl.classList.remove('show');
+  successEl.classList.remove('show');
+  
+  if (!username || !password) {
+    errorMsg.textContent = 'يرجى ملء جميع الحقول';
+    errorEl.classList.add('show');
+    return;
+  }
+  
+  btn.classList.add('loading');
+  btn.disabled = true;
+  
+  try {
+    let success = false;
+    let data = null;
+    
+    console.log('🔐 [Login] محاولة:', username);
+    
+    try {
+      const response = await fetch(FIXED_LOGIN_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      
+      const responseText = await response.text();
+      console.log('📥 [Login] response:', responseText);
+      
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        errorMsg.textContent = '⚠️ استجابة غير صحيحة من الخادم';
+        errorEl.classList.add('show');
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        return;
+      }
+      
+      if (response.ok && data && data.success === true) {
+        success = true;
+      } else {
+        errorMsg.textContent = (data && data.message) ? data.message : 'بيانات الدخول غير صحيحة';
+      }
+    } catch (e) {
+      console.error('Login fetch error:', e);
+      // Fallback للاختبار في حال انقطاع الاتصال
+      if (username === 'admin' && password === 'admin') {
+        success = true;
+        data = {
+          success: true, user_id: 'admin', username: 'admin',
+          full_name: 'المدير (وضع الاختبار)', role: 'admin', sheet_id: ''
+        };
+      } else {
+        errorMsg.textContent = '⚠️ تعذّر الاتصال بالخادم. تحقق من الانترنت';
+      }
+    }
+    
+    if (success) {
+      successMsg.textContent = (data && data.message) ? data.message : 'تم تسجيل الدخول بنجاح';
+      successEl.classList.add('show');
+      
+      localStorage.setItem(AUTH_KEY, 'true');
+      localStorage.setItem(AUTH_USER_KEY, username);
+      
+      currentSession.user_id = data && data.user_id ? data.user_id : username;
+      currentSession.username = data && data.username ? data.username : username;
+      currentSession.full_name = data && data.full_name ? data.full_name : username;
+      currentSession.role = data && data.role ? data.role : 'user';
+      currentSession.sheet_id = data && data.sheet_id ? data.sheet_id : '';
+      saveSession();
+      
+      setTimeout(() => {
+        document.getElementById('authOverlay').classList.add('hidden');
+        setTimeout(() => {
+          document.getElementById('authOverlay').style.display = 'none';
+          updateUserInfo();
+          if (typeof initApp === 'function') initApp();
+        }, 600);
+      }, 800);
+    } else {
+      errorEl.classList.add('show');
+      document.getElementById('authPassword').value = '';
+    }
+  } catch (e) {
+    console.error('Login error:', e);
+    errorMsg.textContent = 'حدث خطأ، حاول مرة أخرى';
+    errorEl.classList.add('show');
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+function logout() {
+  if (!confirm('هل تريد تسجيل الخروج؟')) return;
+  try {
+    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+    localStorage.removeItem(SESSION_KEY);
+  } catch (e) {}
+  clearSession();
+  location.reload();
+}
+
+function setupLoginScreen() {
+  ['authUsername', 'authPassword'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); handleLogin(); }
+      });
+    }
+  });
+  setTimeout(() => {
+    const userInput = document.getElementById('authUsername');
+    if (userInput) userInput.focus();
+  }, 500);
+}
+
+// ============ نهاية نظام المصادقة ============
+
+
 // ============ الحالة العامة ============
 let currentStatusFilter = 'all';
 let currentBoardFilter = 'all';
@@ -2273,25 +3006,158 @@ function renderSubscribers() {
     else if (status === 'partial') { badgeText = 'جزئي'; badgeClass = 'partial'; amountText = formatNum(remaining) + ' متبقي'; }
     else if (status === 'debt') { badgeText = 'دين سابق'; badgeClass = 'partial'; }
     
-    return '<div class="subscriber-card ' + status + '" onclick="showSubscriberDetail(\'' + s.id + '\')">' +
-      '<div class="subscriber-avatar">' + initial + '</div>' +
-      '<div class="subscriber-info">' +
-        '<div class="subscriber-name">' + (s.subscriber_name || 'بدون اسم') + '</div>' +
-        '<div class="subscriber-meta">' +
-          '<span>⚡ ' + (s.amperes || 0) + 'A</span>' +
-          '<span>📋 بورد ' + (s.board || '?') + '</span>' +
-          '<span>🏷️ ' + (s.subscription_type || 'سكني') + '</span>' +
+    return '<div class="subscriber-card ' + status + '">' +
+      '<div class="subscriber-main" onclick="showSubscriberDetail(\'' + s.id + '\')">' +
+        '<div class="subscriber-avatar">' + initial + '</div>' +
+        '<div class="subscriber-info">' +
+          '<div class="subscriber-name">' + (s.subscriber_name || 'بدون اسم') + '</div>' +
+          '<div class="subscriber-meta">' +
+            '<span>⚡ ' + (s.amperes || 0) + 'A</span>' +
+            '<span>📋 بورد ' + (s.board || '?') + '</span>' +
+            '<span>🏷️ ' + (s.subscription_type || 'سكني') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="subscriber-amount">' +
+          '<div class="value">' + amountText + '</div>' +
+          '<div class="badge ' + badgeClass + '">' + badgeText + '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="subscriber-amount">' +
-        '<div class="value">' + amountText + '</div>' +
-        '<div class="badge ' + badgeClass + '">' + badgeText + '</div>' +
+      '<div class="subscriber-actions">' +
+        '<button class="sub-action-btn edit" onclick="event.stopPropagation(); editSubscriber(\'' + s.id + '\')">' +
+          '<span class="icon">✏️</span><span>تعديل</span>' +
+        '</button>' +
+        '<button class="sub-action-btn whatsapp" onclick="event.stopPropagation(); sendSubscriberWhatsApp(\'' + s.id + '\')">' +
+          '<span class="icon">💬</span><span>واتساب</span>' +
+        '</button>' +
+        '<button class="sub-action-btn delete" onclick="event.stopPropagation(); deleteSubscriber(\'' + s.id + '\')">' +
+          '<span class="icon">🗑️</span><span>حذف</span>' +
+        '</button>' +
       '</div>' +
     '</div>';
   }).join('');
 }
 
 // ============ تفاصيل المشترك ============
+// ============ إجراءات المشتركين السريعة ============
+
+// تعديل مشترك
+function editSubscriber(id) {
+  const sub = getSubscribers().find(s => s.id === id);
+  if (!sub) return;
+  
+  // ملء حقول مودال إضافة المشترك بالقيم الحالية
+  document.getElementById('sub-name').value = sub.subscriber_name || '';
+  document.getElementById('sub-phone').value = sub.phone || '';
+  document.getElementById('sub-amperes').value = sub.amperes || '';
+  document.getElementById('sub-board').value = sub.board || '1';
+  document.getElementById('sub-type').value = sub.subscription_type || 'سكني';
+  document.getElementById('sub-amount').value = sub.amount || '';
+  
+  // حفظ ID للتعديل
+  window._editingSubscriberId = id;
+  
+  // فتح المودال
+  openModal('add_subscriber');
+  
+  // تحديث عنوان المودال وزر الإرسال
+  setTimeout(() => {
+    const modal = document.getElementById('modal-add_subscriber');
+    if (modal) {
+      const h2 = modal.querySelector('h2');
+      if (h2) h2.innerHTML = '✏️ تعديل بيانات المشترك';
+      const submitBtn = modal.querySelector('.btn-primary');
+      if (submitBtn) submitBtn.textContent = '💾 حفظ التعديلات';
+    }
+  }, 50);
+}
+
+// حذف مشترك
+function deleteSubscriber(id) {
+  const sub = getSubscribers().find(s => s.id === id);
+  if (!sub) return;
+  
+  if (!confirm('⚠️ هل أنت متأكد من حذف المشترك "' + (sub.subscriber_name || 'بدون اسم') + '"؟\n\nسيتم حذف جميع بياناته بشكل نهائي.')) {
+    return;
+  }
+  
+  const subs = getSubscribers();
+  const updated = subs.filter(s => s.id !== id);
+  localStorage.setItem('subscribers', JSON.stringify(updated));
+  
+  // تسجيل النشاط
+  saveActivity({
+    action_type: 'delete_subscriber',
+    subscriber_id: id,
+    subscriber_name: sub.subscriber_name,
+    operator_name: localStorage.getItem('operatorName') || 'النظام'
+  });
+  
+  // إرسال للسيرفر إن أمكن
+  const url = localStorage.getItem('webhookUrl');
+  if (url) {
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action_type: 'delete_subscriber',
+        subscriber_id: id,
+        subscriber_name: sub.subscriber_name,
+        user_id: currentSession.user_id || '',
+        username: currentSession.username || '',
+        sheet_id: currentSession.sheet_id || '',
+        operator_name: localStorage.getItem('operatorName') || 'النظام'
+      })
+    }).catch(() => {});
+  }
+  
+  showToast('🗑️ تم حذف المشترك', 'success');
+  updateHomePage();
+}
+
+// إرسال رسالة واتساب لمشترك
+function sendSubscriberWhatsApp(id) {
+  const sub = getSubscribers().find(s => s.id === id);
+  if (!sub) {
+    showToast('⚠️ المشترك غير موجود', 'error');
+    return;
+  }
+  
+  if (!sub.phone) {
+    showToast('⚠️ لا يوجد رقم موبايل لهذا المشترك', 'error');
+    return;
+  }
+  
+  const status = getSubscriberStatus(sub);
+  const due = parseFloat(sub.amount) || 0;
+  const paid = parseFloat(sub.paid_amount) || 0;
+  const remaining = due - paid;
+  const genName = localStorage.getItem('generatorName') || 'مولدة أمبير';
+  
+  let message = '';
+  if (status === 'paid') {
+    message = '🧾 *وصل تسديد - ' + genName + '*\n\n' +
+      '👤 الزبون: *' + sub.subscriber_name + '*\n' +
+      '⚡ الأمبيرات: ' + (sub.amperes || 0) + 'A\n' +
+      '🏷️ النوع: ' + (sub.subscription_type || 'سكني') + '\n' +
+      '✅ المبلغ المسدد: *' + formatNum(paid) + ' د.ع*\n\n' +
+      '_شكراً لتعاملكم معنا 🙏_';
+  } else {
+    message = '🔔 *تذكير من ' + genName + '*\n\n' +
+      'السلام عليكم *' + sub.subscriber_name + '*\n\n' +
+      '⚡ الأمبيرات: ' + (sub.amperes || 0) + 'A\n' +
+      '🏷️ نوع الاشتراك: ' + (sub.subscription_type || 'سكني') + '\n' +
+      '💰 المبلغ المستحق: *' + formatNum(due) + ' د.ع*\n' +
+      (paid > 0 ? '✅ المسدد: ' + formatNum(paid) + ' د.ع\n📊 المتبقي: *' + formatNum(remaining) + ' د.ع*\n' : '') +
+      '\nيرجى التكرم بالتسديد. شكراً لتعاونكم 🙏';
+  }
+  
+  const phone = sub.phone.replace(/\D/g, '');
+  const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
+  window.open(url, '_blank');
+}
+
+// ============ نهاية إجراءات المشتركين السريعة ============
+
 function showSubscriberDetail(id) {
   const sub = getSubscribers().find(s => s.id === id);
   if (!sub) return;
@@ -2618,7 +3484,14 @@ function exportData() {
 async function submitForm(type) {
   const url = localStorage.getItem('webhookUrl');
   const operator = localStorage.getItem('operatorName') || 'النظام';
-  let data = { action_type: type, operator_name: operator };
+  // إضافة بيانات الجلسة (sheet_id الديناميكي + user_id) لكل عملية
+  let data = { 
+    action_type: type, 
+    operator_name: operator,
+    user_id: currentSession.user_id || '',
+    username: currentSession.username || '',
+    sheet_id: currentSession.sheet_id || ''
+  };
   
   if (type === 'payment') {
     const subId = document.getElementById('pay-subscriber').value;
@@ -2646,7 +3519,31 @@ async function submitForm(type) {
     data.board = document.getElementById('sub-board').value;
     data.amount = parseFloat(document.getElementById('sub-amount').value) || 0;
     if (!data.subscriber_name || !data.amperes) { showToast('⚠️ أدخل الاسم والأمبيرات', 'error'); return; }
-    saveSubscriber(data);
+    
+    // وضع التعديل
+    if (window._editingSubscriberId) {
+      data.subscriber_id = window._editingSubscriberId;
+      data.action_type = 'edit_subscriber';
+      updateSubscriber(window._editingSubscriberId, {
+        subscriber_name: data.subscriber_name,
+        phone: data.phone,
+        amperes: data.amperes,
+        subscription_type: data.subscription_type,
+        board: data.board,
+        amount: data.amount
+      });
+      window._editingSubscriberId = null;
+      // إعادة عنوان المودال للوضع الافتراضي
+      const modal = document.getElementById('modal-add_subscriber');
+      if (modal) {
+        const h2 = modal.querySelector('h2');
+        if (h2) h2.innerHTML = '👤 إضافة مشترك جديد';
+        const submitBtn = modal.querySelector('.btn-primary');
+        if (submitBtn) submitBtn.textContent = 'إضافة';
+      }
+    } else {
+      saveSubscriber(data);
+    }
   }
   else if (type === 'expense') {
     data.expense_type = document.getElementById('exp-type').value;
@@ -2702,8 +3599,29 @@ function clearForms() {
 }
 
 // ============ بدء التشغيل ============
-loadSettings();
-updateHomePage();
+
+// دالة تهيئة التطبيق (تُستدعى بعد تسجيل الدخول)
+function initApp() {
+  loadSettings();
+  updateHomePage();
+  updateUserInfo();
+  console.log('✅ التطبيق جاهز - المستخدم:', currentSession.username);
+}
+
+// تحميل الجلسة من LocalStorage
+loadSession();
+
+// فحص حالة تسجيل الدخول
+if (isAuthenticated() && currentSession.username) {
+  // المستخدم مسجل دخول - دخول مباشر
+  console.log('✅ Session موجودة - دخول مباشر');
+  document.getElementById('authOverlay').style.display = 'none';
+  initApp();
+} else {
+  // عرض شاشة Login
+  console.log('🔐 عرض شاشة تسجيل الدخول');
+  setupLoginScreen();
+}
 
 // ============ ميزة طباعة الوصولات ============
 function openPrintOptions() {

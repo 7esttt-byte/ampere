@@ -1,5 +1,5 @@
-// Service Worker لتطبيق أمبير - يجعل التطبيق يعمل بدون انترنت
-const CACHE_NAME = 'ampere-v5.0';
+// Service Worker لتطبيق أمبير v6
+const CACHE_NAME = 'ampere-v6.0';
 const FILES_TO_CACHE = [
   './',
   './index.html',
@@ -11,7 +11,6 @@ const FILES_TO_CACHE = [
   'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cairo:wght@600;700;900&display=swap'
 ];
 
-// تثبيت الـ Service Worker وتخزين الملفات
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -23,7 +22,6 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// تنشيط الـ Service Worker وحذف الكاش القديم
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -35,21 +33,14 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// التعامل مع طلبات الشبكة
 self.addEventListener('fetch', (event) => {
-  // تجاهل طلبات الـ Webhook (يجب أن تذهب للسيرفر دائماً)
-  if (event.request.url.includes('webhook')) {
-    return;
-  }
+  // تجاهل طلبات Webhook
+  if (event.request.url.includes('webhook')) return;
   
-  // استراتيجية: Cache First, ثم Network
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+      if (cachedResponse) return cachedResponse;
       return fetch(event.request).then((response) => {
-        // تخزين النسخة الجديدة
         if (response && response.status === 200) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -58,7 +49,6 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => {
-        // في حالة فشل الشبكة، أرجع الصفحة الرئيسية
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
